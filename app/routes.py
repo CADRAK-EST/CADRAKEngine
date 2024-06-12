@@ -31,6 +31,6 @@ def parse_file():
     file.save(file_path)
 
     parsed_data = parse_dxf(file_path)
-    os.remove(file_path)  # Clean up the temporary file
+    os.remove(file_path)
 
     return jsonify({"message": f"File {file.filename} parsed successfully", "parsed_data": parsed_data}), 200
