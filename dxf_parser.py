@@ -1,4 +1,4 @@
-from app.dxf_title_block_parser import parse_dxf_title_block
+from dxf_title_block_parser import parse_dxf_title_block
 
 def parse_dxf(file_path):
     parsed_data = {
