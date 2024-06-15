@@ -1,8 +1,7 @@
-from app.parsers.dxf_title_block_parser import parse_dxf_title_block
+from app.parsers.drawing_parsing import initialize
 
 def parse_dxf(file_path):
-    parsed_data = {
-        "filename": file_path,
-        "title_block": parse_dxf_title_block(file_path)
-    }
-    return parsed_data
+    page = initialize(file_path, visualize=False, save=True, analyze=True)
+    return page
+
+# parse_dxf("E:\\dev\\CADRAK2\\CADRAKEngine\\app\\parsers\\LauriToru.dxf")

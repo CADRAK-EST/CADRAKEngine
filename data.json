@@ -1,0 +1,897 @@
+{
+    "metadata": {
+        "filename": "LauriToru.dxf",
+        "units": 4,
+        "software_version": "AC1032",
+        "background_color": "0xFFFFFF",
+        "bounding_box": [
+            0.0,
+            0.0,
+            0.0,
+            148.5,
+            105.0,
+            0.0
+        ]
+    },
+    "bounding_box": {},
+    "views": [
+        {
+            "contours": {
+                "lines": [
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 189.23
+                        },
+                        "end": {
+                            "x": 127.0,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 189.23
+                        },
+                        "end": {
+                            "x": 127.0,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 196.85,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 127.0,
+                            "y": 132.08
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 209.55,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 209.55,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 189.23
+                        },
+                        "end": {
+                            "x": 127.0,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 323.85,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 141.605
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 141.605
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 225.298,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 225.298,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 311.15,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 311.15,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 323.85,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 323.85,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 225.298,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 225.298,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 196.85,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 151.13
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 151.13
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 170.18
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 170.18
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 196.85,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 132.08
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 160.655
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 160.655
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 160.655
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 160.655
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 273.05,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 273.05,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 273.05,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 273.05,
+                            "y": 125.73
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 323.85,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 189.23
+                        },
+                        "end": {
+                            "x": 127.0,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 132.08
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 196.85,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 127.0,
+                            "y": 132.08
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 171.45,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 171.45,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 151.13
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 151.13
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 179.705
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 179.705
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 179.705
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 179.705
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 196.85,
+                            "y": 173.482
+                        },
+                        "end": {
+                            "x": 323.85,
+                            "y": 173.482
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 170.18
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 170.18
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 171.45,
+                            "y": 125.73
+                        },
+                        "end": {
+                            "x": 171.45,
+                            "y": 189.23
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 144.78
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 127.0,
+                            "y": 141.605
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 141.605
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 209.55,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 209.55,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 323.85,
+                            "y": 144.78
+                        },
+                        "end": {
+                            "x": 196.85,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 311.15,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 311.15,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 234.95,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 234.95,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 234.95,
+                            "y": 132.08
+                        },
+                        "end": {
+                            "x": 234.95,
+                            "y": 144.78
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 196.85,
+                            "y": 173.482
+                        },
+                        "end": {
+                            "x": 323.85,
+                            "y": 173.482
+                        },
+                        "colour": "0x000000",
+                        "weight": 0.35,
+                        "style": "BYLAYER"
+                    }
+                ],
+                "circles": [],
+                "arcs": [],
+                "lwpolylines": [],
+                "polylines": [],
+                "solids": []
+            },
+            "block_name": "View 1"
+        },
+        {
+            "contours": {
+                "lines": [
+                    {
+                        "start": {
+                            "x": 41.966,
+                            "y": 73.526
+                        },
+                        "end": {
+                            "x": 23.791,
+                            "y": 73.526
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "Chain"
+                    },
+                    {
+                        "start": {
+                            "x": 32.878,
+                            "y": 82.614
+                        },
+                        "end": {
+                            "x": 32.878,
+                            "y": 64.439
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "Chain"
+                    }
+                ],
+                "circles": [
+                    {
+                        "centre": {
+                            "x": 32.878,
+                            "y": 73.526
+                        },
+                        "radius": 7.5,
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "centre": {
+                            "x": 32.878,
+                            "y": 85.526
+                        },
+                        "radius": 2.0,
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "centre": {
+                            "x": 44.878,
+                            "y": 73.526
+                        },
+                        "radius": 2.0,
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "centre": {
+                            "x": 20.878,
+                            "y": 73.526
+                        },
+                        "radius": 2.0,
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "centre": {
+                            "x": 32.878,
+                            "y": 61.526
+                        },
+                        "radius": 2.0,
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "centre": {
+                            "x": 32.878,
+                            "y": 73.526
+                        },
+                        "radius": 15.0,
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    }
+                ],
+                "arcs": [],
+                "lwpolylines": [],
+                "polylines": [],
+                "solids": []
+            },
+            "block_name": "View 2"
+        },
+        {
+            "contours": {
+                "lines": [
+                    {
+                        "start": {
+                            "x": 125.342,
+                            "y": 61.534
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 76.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 61.534
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 61.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 64.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 64.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 62.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 62.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 73.754,
+                            "y": 69.034
+                        },
+                        "end": {
+                            "x": 126.929,
+                            "y": 69.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "Chain"
+                    },
+                    {
+                        "start": {
+                            "x": 125.342,
+                            "y": 61.534
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 76.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 76.534
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 76.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 76.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 76.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 74.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 74.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 76.534
+                        },
+                        "end": {
+                            "x": 75.342,
+                            "y": 61.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 76.534
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 76.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 76.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 76.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 74.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 74.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 76.534
+                        },
+                        "end": {
+                            "x": 75.342,
+                            "y": 61.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 61.534
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 61.534
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 64.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 64.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 75.342,
+                            "y": 62.034
+                        },
+                        "end": {
+                            "x": 125.342,
+                            "y": 62.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "BYLAYER"
+                    },
+                    {
+                        "start": {
+                            "x": 73.754,
+                            "y": 69.034
+                        },
+                        "end": {
+                            "x": 126.929,
+                            "y": 69.034
+                        },
+                        "colour": "0x000000",
+                        "weight": -1,
+                        "style": "Chain"
+                    }
+                ],
+                "circles": [],
+                "arcs": [],
+                "lwpolylines": [],
+                "polylines": [],
+                "solids": []
+            },
+            "block_name": "View 3"
+        }
+    ],
+    "info_boxes": []
+}
