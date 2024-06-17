@@ -52,7 +52,7 @@ def find_lengths(dimensions, lines, circles):
     view_dimensions_graphs = process_dimensions_to_graphs(dimensions)
     ids_of_mistaken_lines = []
     for i, line in enumerate(lines):
-        if line["layer"] != "visible":  # Check only actual contours
+        if "visible" not in line["layer"].lower():  # Check only actual contours
             continue
         start = line["start"]
         end = line["end"]
