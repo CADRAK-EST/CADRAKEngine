@@ -1,5 +1,6 @@
 ﻿import numpy as np
 
+
 def normalize_point(point, scale=1e3):  # Normalizing function
     return round(point[0] * scale) / scale, round(point[1] * scale) / scale
 
@@ -7,9 +8,6 @@ def normalize_point(point, scale=1e3):  # Normalizing function
 def is_close(a, b, tol=1e-9):
     return abs(a - b) <= tol
 
-
-#def are_points_equal(p1, p2, tol=1e-9):
-#    return is_close(p1[0], p2[0], tol) and is_close(p1[1], p2[1], tol)
 
 def normalize_point2(point, scale=1e3):  # Normalizing function
     return {"x": round(point[0] * scale) / scale, "y": round(point[1] * scale) / scale}
@@ -21,6 +19,7 @@ def map_color(color, background_color):
         7: '0xFFFFFF' if background_color.lower() == "0x000000" else '0x000000', 8: '0x808080', 9: '0xC0C0C0'
     }
     return color_mapping.get(color, '0x000000')
+
 
 def transform_point(x, y, matrix):
     point = np.dot(matrix, [x, y, 1])
