@@ -1,5 +1,5 @@
 ﻿import networkx as nx
-from utilities import normalize_point, is_close, normalize_point2
+from app.parsers.utilities import normalize_point, is_close, normalize_point2
 
 
 def process_dimensions_to_graphs(dimensions, scale=1e3):

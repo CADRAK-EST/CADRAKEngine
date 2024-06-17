@@ -80,13 +80,13 @@ if __name__ == "__main__":
 
 import ezdxf
 import numpy as np
-from matplotlib_visualization import plot_entities, indicate_mistakes
+from app.parsers.matplotlib_visualization import plot_entities, indicate_mistakes
 import json
 import os
-from parsing_clustering import process_entities, classify_entities, iterative_merge, assign_entities_to_clusters
+from app.parsers.parsing_clustering import process_entities, classify_entities, iterative_merge, assign_entities_to_clusters
 from sklearn.cluster import DBSCAN
 import time
-from dimension_analysis import process_dimensions_to_graphs, find_lengths
+from app.parsers.dimension_analysis import process_dimensions_to_graphs, find_lengths
 import logging
 
 logger = logging.getLogger(__name__)

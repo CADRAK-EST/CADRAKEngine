@@ -5,7 +5,7 @@ from shapely.geometry import MultiPoint
 import alphashape
 from shapely.strtree import STRtree
 from scipy.spatial import cKDTree, KDTree
-from utilities import normalize_point2, map_color, transform_point
+from app.parsers.utilities import normalize_point2, map_color, transform_point
 
 
 def get_insert_transform(insert):
