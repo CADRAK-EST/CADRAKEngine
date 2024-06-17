@@ -1,5 +1,8 @@
 ﻿import networkx as nx
 from app.parsers.utilities import normalize_point, is_close, normalize_point2
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def process_dimensions_to_graphs(dimensions, scale=1e3):
@@ -49,35 +52,35 @@ def find_lengths(dimensions, lines, circles):
     view_dimensions_graphs = process_dimensions_to_graphs(dimensions)
     ids_of_mistaken_lines = []
     for i, line in enumerate(lines):
+        if line["layer"] != "visible":  # Check only actual contours
+            continue
         start = line["start"]
         end = line["end"]
         try:
             if start["x"] == end["x"]:
                 shortest_path = nx.shortest_path(view_dimensions_graphs["G_y"], source=start["y"], target=end["y"], weight='weight')
-                print("Vertical path found:", shortest_path)
+                logger.info("Vertical path found: %s", shortest_path)
             elif start["y"] == end["y"]:
                 shortest_path = nx.shortest_path(view_dimensions_graphs["G_x"], source=start["x"], target=end["x"], weight='weight')
-                print("Horizontal path found:", shortest_path)
+                logger.info("Horizontal path found: %s", shortest_path)
             else:
                 shortest_path_x = nx.shortest_path(view_dimensions_graphs["G_x"], source=start["x"], target=end["x"], weight='weight')
                 shortest_path_y = nx.shortest_path(view_dimensions_graphs["G_y"], source=start["y"], target=end["y"], weight='weight')
                 shortest_path = shortest_path_x + shortest_path_y
-                print("Diagonal path found:", shortest_path)
+                logger.info("Diagonal path found: %s", shortest_path)
         except nx.NetworkXNoPath:
-            print("Mistake found, no dimension can be calculated for line:", start, end)
+            logger.warning("Mistake found, no dimension can be calculated for line: %s, %s", start, end)
             ids_of_mistaken_lines.append(i)
         except nx.NodeNotFound:
-            print("Mistake or wrong line input, no endpoints found in graph for line:", start, end)
+            logger.warning("Mistake or wrong line input, no endpoints found in graph for line: %s, %s", start, end)
             ids_of_mistaken_lines.append(i)
     for circle in circles:
         # Simple check to see whether a CIRCLE entity's radius is in the circles_info dictionary
         if circle["radius"] in view_dimensions_graphs["circles_info"]:
-            print("Circle with real centre", circle["centre"], "and radius", str(circle["radius"]) +
-                  ", corresponding to centre",
-                  view_dimensions_graphs["circles_info"][circle["radius"]])
+            logger.info("Circle with real centre %s and radius %s, corresponding to centre %s",
+                        circle["centre"], circle["radius"], view_dimensions_graphs["circles_info"][circle["radius"]])
         else:
-            print("Circle with real centre", circle["centre"], "and radius", circle["radius"],
-                  "not found in circles_info")
+            logger.warning("Circle with real centre %s and radius %s not found in circles_info", circle["centre"], circle["radius"])
     return ids_of_mistaken_lines
 
 

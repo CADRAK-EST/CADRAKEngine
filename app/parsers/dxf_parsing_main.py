@@ -86,7 +86,7 @@ import os
 from app.parsers.parsing_clustering import process_entities, classify_entities, iterative_merge, assign_entities_to_clusters
 from sklearn.cluster import DBSCAN
 import time
-from app.parsers.dimension_analysis import process_dimensions_to_graphs, find_lengths
+from app.parsers.dimension_analysis import find_lengths
 import logging
 
 logger = logging.getLogger(__name__)
@@ -188,7 +188,7 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=F
         save_time = time.time() - save_time
 
     if log_times:
-        print(f"Time taken for parsing: {parse_time:.2f}s")
+        logger.info(f"Time taken for parsing: {parse_time:.2f}s")
         if visualize:
             logger.info(f"Time taken for visualization: {visualize_time:.2f}s")
         if analyze:
@@ -208,10 +208,10 @@ def mistake_analysis(views, dimensions):
 
 
 def save_json(page):
-    with open("data.json", "w") as f:
+    with open("testing_data.json", "w") as f:
         json.dump(page, f, indent=4)
 
 
 if __name__ == "__main__":
-    file_path = "data/LauriToru.dxf"
+    file_path = os.path.join(os.getcwd(), "../../test_data", "LauriToru.dxf")
     initialize(file_path, True, True, True, True)

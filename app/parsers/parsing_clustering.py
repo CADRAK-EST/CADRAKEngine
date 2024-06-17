@@ -60,6 +60,10 @@ def get_entity_linetype(entity, layer_properties, header_defaults):
             header_defaults["linetype"]
 
 
+def get_entity_layer(entity, layer_properties, header_defaults):
+    return entity.dxf.get("layer", "unknown")
+
+
 def map_color(color, background_color):
     # Map AutoCAD color index to actual hex color code
     color_mapping = {
@@ -206,7 +210,6 @@ def assign_entities_to_clusters(entity_to_points, points, labels):
     return clusters
 
 
-
 def iterative_merge(clusters, alpha):
     iterations = 0
     while True:
@@ -256,38 +259,39 @@ def classify_entities(cluster, transform_matrices, metadata, layer_properties, h
         entity_color = get_entity_color(entity, layer_properties, header_defaults, metadata["background_color"])
         line_weight = get_entity_lineweight(entity, layer_properties, header_defaults)
         line_style = get_entity_linetype(entity, layer_properties, header_defaults)
-
+        layer = get_entity_layer(entity, layer_properties, header_defaults)
         if entity.dxftype() == 'LINE':
             start = normalize_point2(transform_point(entity.dxf.start.x, entity.dxf.start.y, transform_matrix))
             end = normalize_point2(transform_point(entity.dxf.end.x, entity.dxf.end.y, transform_matrix))
             contours["lines"].append(
-                {"start": start, "end": end, "colour": entity_color, "weight": line_weight, "style": line_style})
+                {"start": start, "end": end, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'CIRCLE':
             center = normalize_point2(transform_point(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             contours["circles"].append(
                 {"centre": center, "radius": entity.dxf.radius, "colour": entity_color, "weight": line_weight,
-                 "style": line_style})
+                 "style": line_style, "layer": layer})
         elif entity.dxftype() == 'ARC':
             center = normalize_point2(transform_point(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             contours["arcs"].append(
                 {"centre": center, "radius": entity.dxf.radius, "start_angle": entity.dxf.start_angle,
-                 "end_angle": entity.dxf.end_angle, "colour": entity_color, "weight": line_weight, "style": line_style})
+                 "end_angle": entity.dxf.end_angle, "colour": entity_color, "weight": line_weight, "style": line_style,
+                 "layer": layer})
         elif entity.dxftype() == 'LWPOLYLINE':
             points = [normalize_point2(transform_point(p[0], p[1], transform_matrix)) for p in entity.get_points()]
             contours["lwpolylines"].append(
-                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style})
+                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'POLYLINE':
             points = [normalize_point2(transform_point(v.dxf.location.x, v.dxf.location.y, transform_matrix)) for v in
                       entity.vertices]
             contours["polylines"].append(
-                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style})
+                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'SOLID':
             points = [normalize_point2(transform_point(entity.dxf.vtx0.x, entity.dxf.vtx0.y, transform_matrix)),
                       normalize_point2(transform_point(entity.dxf.vtx1.x, entity.dxf.vtx1.y, transform_matrix)),
                       normalize_point2(transform_point(entity.dxf.vtx2.x, entity.dxf.vtx2.y, transform_matrix)),
                       normalize_point2(transform_point(entity.dxf.vtx3.x, entity.dxf.vtx3.y, transform_matrix))]
             contours["solids"].append(
-                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style})
+                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'ELLIPSE':
             center = normalize_point2(transform_point(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             major_axis_vector = transform_point(entity.dxf.major_axis[0], entity.dxf.major_axis[1], transform_matrix)
@@ -297,11 +301,11 @@ def classify_entities(cluster, transform_matrices, metadata, layer_properties, h
             contours["ellipses"].append({"centre": center, "major_axis_length": major_axis_length * 2,
                                          "minor_axis_length": minor_axis_length * 2,
                                          "rotation_angle": np.degrees(rotation_angle), "colour": entity_color,
-                                         "weight": line_weight, "style": line_style})
+                                         "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'SPLINE':
             points = [normalize_point2(transform_point(p[0], p[1], transform_matrix)) for p in entity.fit_points]
             contours["splines"].append(
-                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style})
+                {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
     return contours
 
 
