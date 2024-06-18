@@ -1,7 +1,10 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Response
 import os
 import logging
 from app.parsers.dxf_parser import parse_dxf
+import zipfile
+import shutil
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +33,21 @@ def parse_file():
     file_path = os.path.join(TEMP_UPLOAD_FOLDER, file.filename)
     file.save(file_path)
 
-    parsed_data = parse_dxf(file_path)
-    logger.info(f"Parsed data: {parsed_data}")
-    os.remove(file_path)
+    def generate():
+        if file.filename.endswith('.dxf'):
+            page = parse_dxf(file_path)
+            yield json.dumps(page).encode('utf-8')  # Convert JSON to bytes
+        elif file.filename.endswith('.zip'):
+            with zipfile.ZipFile(file_path, 'r') as zip_ref:
+                temp_dir = os.path.join(TEMP_UPLOAD_FOLDER, 'extracted')
+                zip_ref.extractall(temp_dir)
+                for file_name in zip_ref.namelist():
+                    if file_name.endswith('.dxf'):
+                        dxf_path = os.path.join(temp_dir, file_name)
+                        page = parse_dxf(dxf_path)
+                        yield json.dumps(page).encode('utf-8')  # Convert JSON to bytes
+                        os.remove(dxf_path)
+                shutil.rmtree(temp_dir)
+        os.remove(file_path)
 
-    return jsonify({"message": f"File {file.filename} parsed successfully", "parsed_data": parsed_data}), 200
+    return Response(generate(), mimetype='application/json')
