@@ -21,7 +21,6 @@ def plot_entities(views, info_boxes):
         }
         return line_type_mapping.get(linetype.upper(), '-')  # Default to solid line if not found
 
-
     def hex_to_mpl_color(hex_color):
         if hex_color.startswith('0x'):
             hex_color = hex_color[2:]

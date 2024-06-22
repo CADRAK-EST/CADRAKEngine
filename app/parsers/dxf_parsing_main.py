@@ -83,11 +83,14 @@ import numpy as np
 from app.parsers.matplotlib_visualization import plot_entities, indicate_mistakes
 import json
 import os
-from app.parsers.parsing_clustering import process_entities, classify_entities, iterative_merge, assign_entities_to_clusters
+from app.parsers.parsing_clustering import process_entities, classify_entities, iterative_merge, \
+    assign_entities_to_clusters
 from sklearn.cluster import DBSCAN
 import time
 from app.parsers.dimension_analysis import find_lengths
 import logging
+from sklearn.metrics.pairwise import pairwise_distances, euclidean_distances
+from scipy.spatial.distance import pdist, squareform
 
 logger = logging.getLogger(__name__)
 
@@ -103,12 +106,14 @@ def read_dxf(file_path):
     }
     all_entities = list(doc.modelspace())
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc, all_entities, metadata)
+    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc, all_entities,
+                                                                                                 metadata)
 
     for dimension in dimensions:
         #print(dimension)
         corresponding_geometry_block_name = dimension.dxf.get('geometry', None)
 
+    #flat_points, labels = form_initial_clusters(entity_to_points)
     flat_points = np.array([pt for sublist in entity_to_points.values() for pt in sublist])
     db = DBSCAN(eps=5, min_samples=1).fit(flat_points)
     labels = db.labels_
@@ -141,13 +146,16 @@ def read_dxf(file_path):
     border_view = None
     if border_entities:
         border_contours = {
-            "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [], "splines": []
+            "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
+            "splines": []
         }
         for be, matrix in border_entities:
             block = doc.blocks.get(be.dxf.name)
-            _, block_entity_to_points, block_transform_matrices, _, _ = process_entities(doc, list(block), metadata, matrix)
+            _, block_entity_to_points, block_transform_matrices, _, _ = process_entities(doc, list(block), metadata,
+                                                                                         matrix)
             for entity in block_entity_to_points:
-                classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties, header_defaults)
+                classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties,
+                                               header_defaults)
                 for key in border_contours.keys():
                     border_contours[key].extend(classified.get(key, []))
         border_view = {"contours": border_contours, "block_name": "Border"}
@@ -212,6 +220,96 @@ def save_json(page):
         json.dump(page, f, indent=4)
 
 
+def form_initial_clusters(entity_to_points):
+    """
+    flat_points = []
+    initial_labels = []
+    for label, sublist in enumerate(entity_to_points.values()):
+        flat_points.extend(sublist)
+        initial_labels.extend([label] * len(sublist))
+
+    flat_points = np.array(flat_points)
+    initial_labels = np.array(initial_labels)
+
+    # Step 2: Define a custom distance metric
+    class CustomDBSCAN(DBSCAN):
+        def _fit(self, X, core_samples_mask, X_dist, X_ind):
+            labels = np.full(X.shape[0], -1, dtype=int)
+            cluster_id = 0
+            for i in range(X.shape[0]):
+                if labels[i] != -1 or not core_samples_mask[i]:
+                    continue
+                labels[i] = cluster_id
+                seeds = X_ind[i]
+                while len(seeds) > 0:
+                    new_seeds = []
+                    for seed in seeds:
+                        if labels[seed] == -1:
+                            labels[seed] = cluster_id
+                            if core_samples_mask[seed]:
+                                new_seeds.extend(X_ind[seed])
+                    seeds = new_seeds
+                cluster_id += 1
+            return labels
+
+        def fit(self, X):
+            self.labels_ = super().fit(X).labels_
+            return self
+
+    def custom_distance_metric(point1, point2):
+        idx1, idx2 = int(point1[0]), int(point2[0])
+        if initial_labels[idx1] == initial_labels[idx2]:
+            return 0.0
+        return np.linalg.norm(flat_points[idx1] - flat_points[idx2])
+
+    indices = np.arange(len(flat_points)).reshape(-1, 1)
+    distance_matrix = euclidean_distances(flat_points)
+
+    # Adjust the distance matrix according to the custom metric
+    for i in range(len(flat_points)):
+        for j in range(len(flat_points)):
+            if initial_labels[i] == initial_labels[j]:
+                distance_matrix[i, j] = 0.0
+
+    # Step 3: Run CustomDBSCAN with the adjusted distance matrix
+    db = CustomDBSCAN(eps=5, min_samples=1, metric='precomputed')
+    labels = db.fit(distance_matrix).labels_
+    """
+    flat_points = []
+    initial_labels = []
+    for label, sublist in enumerate(entity_to_points.values()):
+        flat_points.extend(sublist)
+        initial_labels.extend([label] * len(sublist))
+
+    flat_points = np.array(flat_points)
+    initial_labels = np.array(initial_labels)
+
+    # Step 2: Custom DBSCAN class with optimized distance checking
+    class CustomDBSCAN(DBSCAN):
+        def fit(self, X):
+            self.X = X
+            self.initial_labels = initial_labels
+            return super().fit(X)
+
+        def _region_query(self, point_idx):
+            point = self.X[point_idx]
+            neighbors = []
+            for idx in range(self.X.shape[0]):
+                if self.initial_labels[point_idx] == self.initial_labels[idx] or np.linalg.norm(
+                        point - self.X[idx]) <= self.eps:
+                    neighbors.append(idx)
+            return neighbors
+
+        def fit_predict(self, X, y=None, sample_weight=None):
+            self.fit(X)
+            labels = self.labels_
+            return labels
+
+    # Step 3: Run the optimized CustomDBSCAN
+    db = CustomDBSCAN(eps=5, min_samples=1)
+    return flat_points, db.fit_predict(flat_points)
+
+
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "LauriToru.dxf")
-    initialize(file_path, True, True, True, True)
+    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
+    initialize(file_path, True, False, True, True)

@@ -145,7 +145,7 @@ def process_entities(doc, entities, metadata, parent_transform=np.identity(3)):
 
 
 def extract_points_from_entity(entity):
-    num_segments = 300
+    num_segments = 72
     if entity.dxftype() == 'LINE':
         return [np.array(entity.dxf.start), np.array(entity.dxf.end)]
     elif entity.dxftype() == 'CIRCLE':
