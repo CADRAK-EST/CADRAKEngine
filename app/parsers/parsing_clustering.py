@@ -210,45 +210,73 @@ def assign_entities_to_clusters(entity_to_points, points, labels):
     return clusters
 
 
-def iterative_merge(clusters, alpha):
-    iterations = 0
-    while True:
-        new_clusters = merge_clusters_with_alpha_shape(clusters, alpha)
-        if len(new_clusters) == len(clusters):
-            break
-        clusters = new_clusters
-        iterations += 1
-    return clusters
 
-
-def merge_clusters_with_alpha_shape(clusters, alpha):
-    new_clusters = []
+def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
+    merged_clusters = []
     merged = set()
-    alpha_shapes = [get_alpha_shape(cluster, alpha) for cluster in clusters]
-    spatial_index = STRtree(alpha_shapes)
+    new_alpha_shapes = {}
+    cluster_mapping = {}
 
-    for i, alpha_shape1 in enumerate(alpha_shapes):
-        if i in merged:
+    # Rebuild spatial index
+    shapes = [alpha_shapes[idx] for idx in alpha_shapes]
+    tree = STRtree(shapes)
+
+    print(f"Starting merge with {len(clusters)} clusters.")
+
+    for idx1, alpha_shape1 in list(alpha_shapes.items()):
+        if idx1 in merged:
             continue
 
         merged_current = False
-        for j in spatial_index.query(alpha_shape1):
-            if i >= j or j in merged:
+        for idx2 in tree.query(alpha_shape1):
+            if idx1 == idx2 or idx2 in merged:
                 continue
 
-            alpha_shape2 = alpha_shapes[j]
+            alpha_shape2 = alpha_shapes[idx2]
 
             if alpha_shape1.intersects(alpha_shape2):
-                new_clusters.append(clusters[i] + clusters[j])
-                merged.add(i)
-                merged.add(j)
+                # Merge clusters
+                new_cluster = clusters[idx1] + clusters[idx2]
+                merged.add(idx1)
+                merged.add(idx2)
+
+                # Assign a new index for the new cluster
+                new_idx = len(new_alpha_shapes)
+                new_alpha_shapes[new_idx] = get_alpha_shape(new_cluster, alpha)
+                cluster_mapping[new_idx] = new_cluster
                 merged_current = True
+                print(f"Merged clusters {idx1} and {idx2} into new cluster {new_idx}.")
                 break
 
         if not merged_current:
-            new_clusters.append(clusters[i])
+            new_idx = len(new_alpha_shapes)
+            new_alpha_shapes[new_idx] = alpha_shape1
+            cluster_mapping[new_idx] = clusters[idx1]
 
-    return new_clusters
+    # Convert mapping to a list
+    new_clusters = [cluster_mapping[idx] for idx in sorted(cluster_mapping.keys())]
+    alpha_shapes = new_alpha_shapes
+
+    print(f"Ending merge with {len(new_clusters)} clusters.")
+    return new_clusters, alpha_shapes
+
+def iterative_merge(clusters, alpha):
+    iterations = 0
+    alpha_shapes = {idx: get_alpha_shape(cluster, alpha) for idx, cluster in enumerate(clusters)}
+
+    while True:
+        print(f"Iteration {iterations}: {len(clusters)} clusters before merge.")
+        num_clusters_before = len(clusters)
+        clusters, alpha_shapes = merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes)
+        num_clusters_after = len(clusters)
+        print(f"Iteration {iterations}: {num_clusters_after} clusters after merge.")
+
+        if num_clusters_before == num_clusters_after:
+            break
+        iterations += 1
+
+    print(f"Total iterations: {iterations}")
+    return clusters
 
 
 def classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults):
