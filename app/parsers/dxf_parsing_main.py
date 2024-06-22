@@ -89,8 +89,6 @@ from sklearn.cluster import DBSCAN
 import time
 from app.parsers.dimension_analysis import find_lengths
 import logging
-from sklearn.metrics.pairwise import pairwise_distances, euclidean_distances
-from scipy.spatial.distance import pdist, squareform
 
 logger = logging.getLogger(__name__)
 
