@@ -89,6 +89,8 @@ from sklearn.cluster import DBSCAN
 import time
 from app.parsers.dimension_analysis import find_lengths
 import logging
+import cProfile
+import pstats
 
 logger = logging.getLogger(__name__)
 
@@ -111,10 +113,11 @@ def read_dxf(file_path):
         #print(dimension)
         corresponding_geometry_block_name = dimension.dxf.get('geometry', None)
 
-    #flat_points, labels = form_initial_clusters(entity_to_points)
-    flat_points = np.array([pt for sublist in entity_to_points.values() for pt in sublist])
-    db = DBSCAN(eps=5, min_samples=1).fit(flat_points)
-    labels = db.labels_
+    flat_points, labels = form_initial_clusters(entity_to_points)
+
+    #flat_points = np.array([pt for sublist in entity_to_points.values() for pt in sublist])
+    #db = DBSCAN(eps=5, min_samples=1).fit(flat_points)
+    #labels = db.labels_
 
     # Exclude border entities from clustering
     clusters = assign_entities_to_clusters(
@@ -208,10 +211,12 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=F
 
 def mistake_analysis(views, dimensions):
     for view in views:
-        ids_of_mistaken_lines = find_lengths(dimensions, view["contours"]["lines"], view["contours"]["circles"])
-        view["mistakes"] = {}
-        view["mistakes"]["lines"] = ids_of_mistaken_lines
-        logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} potential mistakes")
+        ids_of_mistaken_lines, ids_of_potential_mistaken_lines = find_lengths(dimensions, view["contours"]["lines"], view["contours"]["circles"])
+        view["mistakes"] = {"potential": {}, "certain": {}}
+        view["mistakes"]["certain"]["lines"] = ids_of_mistaken_lines
+        view["mistakes"]["potential"]["lines"] = ids_of_potential_mistaken_lines
+        logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} mistakes")
+        logger.info(f"{view['block_name']} has {len(ids_of_potential_mistaken_lines)} potential mistakes")
     return views
 
 
@@ -221,60 +226,7 @@ def save_json(page):
 
 
 def form_initial_clusters(entity_to_points):
-    """
-    flat_points = []
-    initial_labels = []
-    for label, sublist in enumerate(entity_to_points.values()):
-        flat_points.extend(sublist)
-        initial_labels.extend([label] * len(sublist))
-
-    flat_points = np.array(flat_points)
-    initial_labels = np.array(initial_labels)
-
-    # Step 2: Define a custom distance metric
-    class CustomDBSCAN(DBSCAN):
-        def _fit(self, X, core_samples_mask, X_dist, X_ind):
-            labels = np.full(X.shape[0], -1, dtype=int)
-            cluster_id = 0
-            for i in range(X.shape[0]):
-                if labels[i] != -1 or not core_samples_mask[i]:
-                    continue
-                labels[i] = cluster_id
-                seeds = X_ind[i]
-                while len(seeds) > 0:
-                    new_seeds = []
-                    for seed in seeds:
-                        if labels[seed] == -1:
-                            labels[seed] = cluster_id
-                            if core_samples_mask[seed]:
-                                new_seeds.extend(X_ind[seed])
-                    seeds = new_seeds
-                cluster_id += 1
-            return labels
-
-        def fit(self, X):
-            self.labels_ = super().fit(X).labels_
-            return self
-
-    def custom_distance_metric(point1, point2):
-        idx1, idx2 = int(point1[0]), int(point2[0])
-        if initial_labels[idx1] == initial_labels[idx2]:
-            return 0.0
-        return np.linalg.norm(flat_points[idx1] - flat_points[idx2])
-
-    indices = np.arange(len(flat_points)).reshape(-1, 1)
-    distance_matrix = euclidean_distances(flat_points)
-
-    # Adjust the distance matrix according to the custom metric
-    for i in range(len(flat_points)):
-        for j in range(len(flat_points)):
-            if initial_labels[i] == initial_labels[j]:
-                distance_matrix[i, j] = 0.0
-
-    # Step 3: Run CustomDBSCAN with the adjusted distance matrix
-    db = CustomDBSCAN(eps=5, min_samples=1, metric='precomputed')
-    labels = db.fit(distance_matrix).labels_
-    """
+    # Step 1: Flatten the dictionary to a list of points and a list of initial labels
     flat_points = []
     initial_labels = []
     for label, sublist in enumerate(entity_to_points.values()):
@@ -311,6 +263,25 @@ def form_initial_clusters(entity_to_points):
 
 
 if __name__ == "__main__":
-    print(os.getcwd())
-    file_path = "C:/Users/Kaur/Desktop/DXF Data/AutoCAD/Kaur2_only2D.dxf"
-    initialize(file_path, True, False, True, True)
+
+    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
+
+    # Create a profile object
+    #pr = cProfile.Profile()
+    #pr.enable()
+
+    try:
+        initialize(file_path, True, False, True, True)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    #pr.disable()
+
+    # Save profiling results to a file
+    #with open("profiling_results.prof", "w") as f:
+    #    ps = pstats.Stats(pr, stream=f)
+    #    ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
+
+    # Optionally, print profiling results to the console
+    #ps = pstats.Stats(pr)
+    #ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()

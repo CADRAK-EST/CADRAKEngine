@@ -51,6 +51,7 @@ def process_dimensions_to_graphs(dimensions, scale=1e3):
 def find_lengths(dimensions, lines, circles):
     view_dimensions_graphs = process_dimensions_to_graphs(dimensions)
     ids_of_mistaken_lines = []
+    ids_of_potential_mistaken_lines = []
     for i, line in enumerate(lines):
         if "visible" not in line["layer"].lower():  # Check only actual contours
             continue
@@ -69,11 +70,11 @@ def find_lengths(dimensions, lines, circles):
                 shortest_path = shortest_path_x + shortest_path_y
                 logger.info("Diagonal path found: %s", shortest_path)
         except nx.NetworkXNoPath:
-            logger.warning("Mistake found, no dimension can be calculated for line: %s, %s", start, end)
+            #logger.warning("Mistake found, no dimension can be calculated for line: %s, %s", start, end)
             ids_of_mistaken_lines.append(i)
         except nx.NodeNotFound:
-            logger.warning("Mistake or wrong line input, no endpoints found in graph for line: %s, %s", start, end)
-            ids_of_mistaken_lines.append(i)
+            #logger.warning("Mistake or wrong line input, no endpoints found in graph for line: %s, %s", start, end)
+            ids_of_potential_mistaken_lines.append(i)
     for circle in circles:
         # Simple check to see whether a CIRCLE entity's radius is in the circles_info dictionary
         if circle["radius"] in view_dimensions_graphs["circles_info"]:
@@ -81,7 +82,7 @@ def find_lengths(dimensions, lines, circles):
                         circle["centre"], circle["radius"], view_dimensions_graphs["circles_info"][circle["radius"]])
         else:
             logger.warning("Circle with real centre %s and radius %s not found in circles_info", circle["centre"], circle["radius"])
-    return ids_of_mistaken_lines
+    return ids_of_mistaken_lines, ids_of_potential_mistaken_lines
 
 
 """
