@@ -167,3 +167,4 @@ cython_debug/
 # Laur testing data and json
 /test_data
 testing_data.json
+*.prof

@@ -264,20 +264,20 @@ if __name__ == "__main__":
     file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
 
     # Create a profile object
-    pr = cProfile.Profile()
-    pr.enable()
+    #pr = cProfile.Profile()
+    #pr.enable()
 
     try:
         initialize(file_path, True, False, True, True)
     except Exception as e:
         print(f"An error occurred: {e}")
 
-    pr.disable()
+    #pr.disable()
 
     # Save profiling results to a file
-    with open("profiling_results.prof", "w") as f:
-        ps = pstats.Stats(pr, stream=f)
-        ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
+    #with open("profiling_results.prof", "w") as f:
+    #    ps = pstats.Stats(pr, stream=f)
+    #    ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
 
     # Optionally, print profiling results to the console
     #ps = pstats.Stats(pr)
