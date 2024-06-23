@@ -88,6 +88,7 @@ def process_entities(doc, entities, metadata, parent_transform=np.identity(3)):
     transform_matrices = {}
     border_entities = []
     dimensions = []
+    texts = []
 
     def apply_transform(matrix, points):
         return [transform_point(p[0], p[1], matrix) for p in points]
@@ -96,6 +97,7 @@ def process_entities(doc, entities, metadata, parent_transform=np.identity(3)):
         block_points = []
         block_entity_to_points = defaultdict(list)
         block_transform_matrices = {}
+        block_texts = []
         for entity in block:
             if entity.dxftype() == 'INSERT':
                 insert_matrix = get_insert_transform(entity)
@@ -110,6 +112,17 @@ def process_entities(doc, entities, metadata, parent_transform=np.identity(3)):
                 for k, v in nested_entity_to_points.items():
                     block_entity_to_points[k].extend(v)
                 block_transform_matrices.update(nested_transform_matrices)
+            elif entity.dxftype() == 'TEXT' or entity.dxftype() == 'MTEXT':
+                text_data = {
+                    "type": entity.dxftype(),
+                    "text": entity.dxf.text if entity.dxftype() == 'TEXT' else entity.text,
+                    "insert": transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix),
+                    "height": entity.dxf.height if entity.dxftype() == 'TEXT' else entity.dxf.char_height,
+                    "style": entity.dxf.style,
+                    "color": "#000000"
+                    # "color": get_entity_color(entity, metadata['layer_properties'], metadata['header_defaults'], metadata['background_color'])
+                }
+                block_texts.append(text_data)
             else:
                 entity_points = extract_points_from_entity(entity)
                 if entity_points:
@@ -117,7 +130,7 @@ def process_entities(doc, entities, metadata, parent_transform=np.identity(3)):
                     block_entity_to_points[entity].extend(transformed_points)
                     block_transform_matrices[entity] = transform_matrix
                     block_points.extend(transformed_points)
-        return block_points, block_entity_to_points, block_transform_matrices
+        return block_points, block_entity_to_points, block_transform_matrices, block_texts
 
     for entity in entities:
         if entity.dxftype() == 'INSERT':
@@ -127,7 +140,7 @@ def process_entities(doc, entities, metadata, parent_transform=np.identity(3)):
                 border_entities.append((entity, insert_matrix))
                 transform_matrices[entity] = insert_matrix
                 continue
-            block_points, block_entity_to_points, block_transform_matrices = process_block(block, insert_matrix)
+            block_points, block_entity_to_points, block_transform_matrices, block_texts = process_block(block, insert_matrix)
             points.extend(block_points)
             for k, v in block_entity_to_points.items():
                 entity_to_points[k].extend(v)
