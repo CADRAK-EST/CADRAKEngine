@@ -214,8 +214,7 @@ def mistake_analysis(views, dimensions):
         view["mistakes"] = {"potential": {}, "certain": {}}
         view["mistakes"]["certain"]["lines"] = ids_of_mistaken_lines
         view["mistakes"]["potential"]["lines"] = ids_of_potential_mistaken_lines
-        logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} mistakes")
-        logger.info(f"{view['block_name']} has {len(ids_of_potential_mistaken_lines)} potential mistakes")
+        logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} mistakes and {len(ids_of_potential_mistaken_lines)} potential mistakes.")
     return views
 
 
@@ -262,17 +261,13 @@ def form_initial_clusters(entity_to_points):
 
 
 if __name__ == "__main__":
-
     file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
 
     # Create a profile object
     #pr = cProfile.Profile()
     #pr.enable()
 
-    try:
-        initialize(file_path, True, False, True, True)
-    except Exception as e:
-        print(f"An error occurred: {e}")
+    initialize(file_path, True, False, True, True)
 
     #pr.disable()
 
