@@ -81,7 +81,7 @@ def list_blocks_and_visualize(file_path):
         plt.show()
 
 # Example usage
-file_path = 'final/data/LauriToru.dxf'
+file_path = "C:/Users/Kaur/Desktop/DXF Data/AutoCAD/Kaur2_only2D.dxf"
 list_blocks_and_visualize(file_path)
 """
 

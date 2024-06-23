@@ -308,6 +308,30 @@ def classify_entities(cluster, transform_matrices, metadata, layer_properties, h
                 {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
     return contours
 
+def classify_text_entities(all_entities, metadata, layer_properties, header_defaults):
+    print("All entities: ", all_entities)
+    texts = {"texts": [], "mtexts": []}
+    for entity in all_entities:
+        print("Entities", entity)
+        if entity.dxftype() == 'ACIDBLOCKREFERENCE':
+            continue
+        entity_color = get_entity_color(entity, layer_properties, header_defaults, metadata["background_color"])
+        line_weight = get_entity_lineweight(entity, layer_properties, header_defaults)
+        line_style = get_entity_linetype(entity, layer_properties, header_defaults)
+        layer = get_entity_layer(entity, layer_properties, header_defaults)
+        if entity.dxftype() == 'TEXT':
+            print("Found a text!")
+            text = entity.dxf.text
+            height = entity.dxf.height
+            style = entity.dxf.style
+            texts["texts"].append({"text": text, "height": height, "style": style, "colour": entity_color, "layer": layer})
+        elif entity.dxftype() == 'MTEXT':
+            print("Found an mtext!")
+            text = entity.text
+            height = entity.dxf.char_height
+            style = entity.dxf.style
+            texts["mtexts"].append({"text": text, "height": height, "style": style, "colour": entity_color, "layer": layer})
+    return texts
 
 def get_alpha_shape(cluster, alpha=0.1):
     points = entities_to_points(cluster)

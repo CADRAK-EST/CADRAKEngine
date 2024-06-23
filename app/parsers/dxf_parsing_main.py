@@ -84,7 +84,7 @@ from app.parsers.matplotlib_visualization import plot_entities, indicate_mistake
 import json
 import os
 from app.parsers.parsing_clustering import process_entities, classify_entities, iterative_merge, \
-    assign_entities_to_clusters
+    assign_entities_to_clusters, classify_text_entities
 from sklearn.cluster import DBSCAN
 import time
 from app.parsers.dimension_analysis import find_lengths
@@ -162,16 +162,18 @@ def read_dxf(file_path):
 
     views = [{"contours": classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
+    texts = [{"texts": classify_text_entities(all_entities, metadata, layer_properties, header_defaults),
+              "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
 
     if border_view:
         views.append(border_view)
 
-    return views, dimensions, metadata
+    return views, dimensions, metadata, texts
 
 
 def initialize(file_path, visualize=False, save=False, analyze=True, log_times=False):
     parse_time = time.time()
-    views, dimensions, metadata = read_dxf(file_path)
+    views, dimensions, metadata, texts = read_dxf(file_path)
     info_boxes = []
     parse_time = time.time() - parse_time
 
@@ -181,7 +183,7 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=F
         indicate_mistakes(views)
         analyze_time = time.time() - analyze_time
 
-    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": []}
+    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": [], "texts": texts}
 
     if visualize:
         visualize_time = time.time()
@@ -309,5 +311,6 @@ def form_initial_clusters(entity_to_points):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
+    print(os.getcwd())
+    file_path = "C:/Users/Kaur/Desktop/DXF Data/AutoCAD/Kaur2_only2D.dxf"
     initialize(file_path, True, False, True, True)
