@@ -6,6 +6,7 @@ import alphashape
 from shapely.strtree import STRtree
 from scipy.spatial import cKDTree, KDTree
 from app.parsers.utilities import normalize_point2, map_color, transform_point
+import re
 
 
 def get_insert_transform(insert):
@@ -355,10 +356,16 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             texts["texts"].append({"text": text, "height": height, "style": style, "colour": entity_color, "layer": layer})
         elif entity.dxftype() == 'MTEXT':
             print("Found an mtext!")
-            text = entity.text
+            """Strip unnecessary formatting tags from MTEXT content."""
+            # Remove font definitions and other formatting tags
+            text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}', '', entity.text)
+            # Remove any remaining braces and other extraneous characters
+            text = re.sub(r'{|}', '', text)
+            text_center = entity.dxf.insert.x, entity.dxf.insert.y
             height = entity.dxf.char_height
             style = entity.dxf.style
-            texts["mtexts"].append({"text": text, "height": height, "style": style, "colour": entity_color, "layer": layer})
+            # color currently manually set to black as the entity_colour of the texts are usually white
+            texts["mtexts"].append({"text": text, "center": text_center, "height": height, "style": style, "colour": "#000000", "layer": layer})
     return texts
 
 def get_alpha_shape(cluster, alpha=0.1):
