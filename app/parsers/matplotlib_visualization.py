@@ -102,5 +102,5 @@ def indicate_mistakes(views):
             view["contours"]["lines"][mistaken_line]["colour"] = "0xFF0000"  # Red color
             # view["contours"]["lines"][mistaken_line]["weight"] = 2
         for potential_mistake in view["mistakes"]["potential"]["lines"]:
-            view["contours"]["lines"][potential_mistake]["colour"] = "0xFFFF00"  # Yellow color
+            view["contours"]["lines"][potential_mistake]["colour"] = "0xFFA500"  # Orange color
     return views

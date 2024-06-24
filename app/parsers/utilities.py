@@ -13,14 +13,10 @@ def normalize_point2(point, scale=1e3):  # Normalizing function
     return {"x": round(point[0] * scale) / scale, "y": round(point[1] * scale) / scale}
 
 
-def map_color(color, background_color):
-    color_mapping = {
-        1: '0xFF0000', 2: '0xFFFF00', 3: '0x00FF00', 4: '0x00FFFF', 5: '0x0000FF', 6: '0xFF00FF',
-        7: '0xFFFFFF' if background_color.lower() == "0x000000" else '0x000000', 8: '0x808080', 9: '0xC0C0C0'
-    }
-    return color_mapping.get(color, '0x000000')
-
-
 def transform_point(x, y, matrix):
     point = np.dot(matrix, [x, y, 1])
     return point[0], point[1]
+
+
+def apply_transform(matrix, points):
+    return [transform_point(p[0], p[1], matrix) for p in points]
