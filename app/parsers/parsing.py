@@ -1,10 +1,6 @@
 ﻿import ezdxf
 import numpy as np
 from collections import defaultdict
-from shapely.geometry import MultiPoint
-import alphashape
-from shapely.strtree import STRtree
-from scipy.spatial import KDTree
 from app.parsers.utilities import normalize_point2, transform_point, apply_transform
 from app.parsers.parsing_utilities import get_entity_color, get_entity_lineweight, get_entity_linetype, get_entity_layer, get_insert_transform
 import re
@@ -133,100 +129,6 @@ def extract_points_from_entity(entity):
                         points.extend([center + radius * np.array([np.cos(a), np.sin(a), 0]) for a in angles])
         return points
     return []
-
-
-def entities_to_points(cluster):
-    points = []
-    for entity in cluster:
-        points.extend(extract_points_from_entity(entity))
-    return points
-
-
-def assign_entities_to_clusters(entity_to_points, points, labels):
-    clusters = defaultdict(list)
-    point_tree = KDTree(points)
-
-    for entity, entity_points in entity_to_points.items():
-        for ep in entity_points:
-            distance, index = point_tree.query(ep[:2], k=1)
-            cluster_id = labels[index]
-            clusters[cluster_id].append(entity)
-            break  # Each entity is assigned to the cluster of its first point
-
-    return clusters
-
-
-def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
-    merged = set()
-    new_alpha_shapes = {}
-    cluster_mapping = {}
-
-    # Rebuild spatial index
-    shapes = [alpha_shapes[idx] for idx in alpha_shapes]
-    tree = STRtree(shapes)
-
-    for idx1, alpha_shape1 in list(alpha_shapes.items()):
-        if idx1 in merged:
-            continue
-
-        merged_current = False
-        for idx2 in tree.query(alpha_shape1):
-            if idx1 == idx2 or idx2 in merged:
-                continue
-
-            alpha_shape2 = alpha_shapes[idx2]
-
-            if alpha_shape1.intersects(alpha_shape2):
-                # Merge clusters
-                new_cluster = clusters[idx1] + clusters[idx2]
-                merged.add(idx1)
-                merged.add(idx2)
-
-                # Assign a new index for the new cluster
-                new_idx = len(new_alpha_shapes)
-                new_alpha_shapes[new_idx] = get_alpha_shape(new_cluster, alpha)
-                cluster_mapping[new_idx] = new_cluster
-                merged_current = True
-                #print(f"Merged clusters {idx1} and {idx2} into new cluster {new_idx}.")
-                break
-
-        if not merged_current:
-            new_idx = len(new_alpha_shapes)
-            new_alpha_shapes[new_idx] = alpha_shape1
-            cluster_mapping[new_idx] = clusters[idx1]
-
-    # Convert mapping to a list
-    new_clusters = [cluster_mapping[idx] for idx in sorted(cluster_mapping.keys())]
-    alpha_shapes = new_alpha_shapes
-
-    return new_clusters, alpha_shapes
-
-
-def iterative_merge(clusters, alpha):
-    iterations = 0
-    alpha_shapes = {idx: get_alpha_shape(cluster, alpha) for idx, cluster in enumerate(clusters)}
-
-    while True:
-        print(f"Iteration {iterations}: {len(clusters)} clusters before merge.")
-        num_clusters_before = len(clusters)
-        clusters, alpha_shapes = merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes)
-        num_clusters_after = len(clusters)
-
-        if num_clusters_before == num_clusters_after:
-            break
-        iterations += 1
-
-    return clusters
-
-
-def get_alpha_shape(cluster, alpha=0.1):
-    points = entities_to_points(cluster)
-    if len(points) < 4:
-        return MultiPoint(points).convex_hull
-    try:
-        return alphashape.alphashape(points, alpha)
-    except Exception:
-        return MultiPoint(points).convex_hull
 
 
 def classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults):

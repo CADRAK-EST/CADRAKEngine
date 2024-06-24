@@ -1,16 +1,14 @@
 ﻿import ezdxf
-import numpy as np
-from app.parsers.matplotlib_visualization import plot_entities, indicate_mistakes
 import json
 import os
-from app.parsers.parsing_clustering import process_entities, classify_entities, iterative_merge, \
-    assign_entities_to_clusters, classify_text_entities
-from sklearn.cluster import DBSCAN
-import time
-from app.parsers.dimension_analysis import find_lengths
 import logging
 import cProfile
 import pstats
+import time
+from app.parsers.parsing import process_entities, classify_entities, classify_text_entities
+from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters
+from app.parsers.matplotlib_visualization import plot_entities, indicate_mistakes
+from app.parsers.dimension_analysis import find_lengths
 
 logger = logging.getLogger(__name__)
 
@@ -143,43 +141,6 @@ def save_json(page):
         json.dump(page, f, indent=4)
 
 
-def form_initial_clusters(entity_to_points):
-    # Step 1: Flatten the dictionary to a list of points and a list of initial labels
-    flat_points = []
-    initial_labels = []
-    for label, sublist in enumerate(entity_to_points.values()):
-        flat_points.extend(sublist)
-        initial_labels.extend([label] * len(sublist))
-
-    flat_points = np.array(flat_points)
-    initial_labels = np.array(initial_labels)
-
-    # Step 2: Custom DBSCAN class with optimized distance checking
-    class CustomDBSCAN(DBSCAN):
-        def fit(self, X):
-            self.X = X
-            self.initial_labels = initial_labels
-            return super().fit(X)
-
-        def _region_query(self, point_idx):
-            point = self.X[point_idx]
-            neighbors = []
-            for idx in range(self.X.shape[0]):
-                if self.initial_labels[point_idx] == self.initial_labels[idx] or np.linalg.norm(
-                        point - self.X[idx]) <= self.eps:
-                    neighbors.append(idx)
-            return neighbors
-
-        def fit_predict(self, X, y=None, sample_weight=None):
-            self.fit(X)
-            labels = self.labels_
-            return labels
-
-    # Step 3: Run the optimized CustomDBSCAN
-    db = CustomDBSCAN(eps=5, min_samples=1)
-    return flat_points, db.fit_predict(flat_points)
-
-
 if __name__ == "__main__":
     file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
 
@@ -199,6 +160,8 @@ if __name__ == "__main__":
             ps = pstats.Stats(pr, stream=f)
             ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
 
-    # Optionally, print profiling results to the console
-    #ps = pstats.Stats(pr)
-    #ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
+        # Optionally, print profiling results to the console
+        #ps = pstats.Stats(pr)
+        #ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
+    else:
+        initialize(file_path, visualize=True, save=False, analyze=True, log_times=True)
