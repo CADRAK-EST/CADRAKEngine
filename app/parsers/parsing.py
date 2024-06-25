@@ -62,6 +62,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                     "text": text,
                     "center": text_center,
                     "text_direction": text_direction,
+                    "attachment_point": entity.dxf.attachment_point,
                     "height": text_height,
                     "style": entity.dxf.style,
                     "color": "#000000"
@@ -264,6 +265,7 @@ def classify_text_entities(all_entities, transform_matrices, metadata, layer_pro
             text_data = {
                 "text": text,
                 "center": text_center,
+                "attachment_point": entity.dxf.attachment_point,
                 "text_direction": text_direction,
                 "height": text_height,
                 "style": entity.dxf.style,
