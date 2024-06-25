@@ -302,7 +302,7 @@ def process_border_block(border_entities, doc_blocks, metadata, layer_properties
     }
     for be, matrix in border_entities:
         block = doc_blocks.get(be.dxf.name)
-        _, block_entity_to_points, block_transform_matrices, _, _ = process_entities(doc_blocks, list(block), matrix)
+        _, block_entity_to_points, block_transform_matrices, *_ = process_entities(doc_blocks, list(block), matrix)
         for entity in block_entity_to_points:
             classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties,
                                            header_defaults)

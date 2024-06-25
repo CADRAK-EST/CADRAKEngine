@@ -19,9 +19,8 @@ def read_dxf(file_path):
     doc_blocks = doc.blocks
     metadata, layer_properties, header_defaults, all_entities = get_doc_data(doc)
 
+    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities)
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities,
-                                                                                                 metadata)
     print("\n1")
     print(texts)
 
