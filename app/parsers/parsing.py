@@ -66,7 +66,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 block_texts['mtexts'].append(text_data)
                 print("The MTEXT: " + text)
             elif entity.dxftype() == "ATTDEF":
-                print("LOL")
+                #print("LOL")
                 print("ATTDEF found: " + entity.dxf.text)
             else:
                 entity_points = extract_points_from_entity(entity)
@@ -163,7 +163,7 @@ def get_entity_points_from_cache(entity):
     return extracted_points_cache[entity]
 
 
-def classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults):
+def classify_entities(cluster, transform_matrices, entity_to_points, metadata, layer_properties, header_defaults):
     contours = {"lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [],
                 "ellipses": [], "splines": []}
     for entity in cluster:
@@ -173,8 +173,8 @@ def classify_entities(cluster, transform_matrices, metadata, layer_properties, h
         line_style = get_entity_linetype(entity, layer_properties, header_defaults)
         layer = get_entity_layer(entity, layer_properties, header_defaults)
         if entity.dxftype() == 'LINE':
-            start = format_point2(transform_point(entity.dxf.start.x, entity.dxf.start.y, transform_matrix))
-            end = format_point2(transform_point(entity.dxf.end.x, entity.dxf.end.y, transform_matrix))
+            start = format_point2(entity_to_points[entity][0])
+            end = format_point2(entity_to_points[entity][1])
             contours["lines"].append(
                 {"start": start, "end": end, "colour": entity_color, "weight": line_weight,
                  "style": line_style, "layer": layer})
@@ -241,8 +241,8 @@ def classify_text_entities(all_entities, transform_matrices, metadata, layer_pro
         elif entity.dxftype() == "INSERT":
             # print("Ins name: " + entity.dxf.name)
             # print(entity.attribs)
-            print("INSERT found: " + entity.get_attrib_text(tag=str, default='Nothing found', search_const=True))
-
+            #print("INSERT found: " + entity.get_attrib_text(tag=str, default='Nothing found', search_const=True))
+            pass
         elif entity.dxftype() == 'MTEXT':
             """Strip unnecessary formatting tags from MTEXT content."""
             # Remove font definitions and other formatting tags
@@ -300,7 +300,7 @@ def process_border_block(border_entities, doc_blocks, metadata, layer_properties
         block = doc_blocks.get(be.dxf.name)
         _, block_entity_to_points, block_transform_matrices, *_ = process_entities(doc_blocks, list(block), matrix)
         for entity in block_entity_to_points:
-            classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties,
+            classified = classify_entities([entity], block_transform_matrices, block_entity_to_points, metadata, layer_properties,
                                            header_defaults)
             for key in border_contours.keys():
                 border_contours[key].extend(classified.get(key, []))

@@ -42,11 +42,10 @@ def read_dxf(file_path):
     if border_entities:
         border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
-
     final_clusters = iterative_merge(cluster_list, 5)
     # final_clusters = cluster_list
 
-    views = [{"contours": classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults),
+    views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
 
     text_entities = classify_text_entities(all_entities, transform_matrices, metadata, layer_properties, header_defaults)
