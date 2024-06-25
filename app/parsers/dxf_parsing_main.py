@@ -21,13 +21,6 @@ def read_dxf(file_path):
 
     points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities)
 
-    print("\n1")
-    print(texts)
-
-    for dimension in dimensions:
-        #print(dimension)
-        corresponding_geometry_block_name = dimension.dxf.get('geometry', None)
-
     flat_points, labels = form_initial_clusters(entity_to_points)
 
     # Exclude border entities from clustering
@@ -43,7 +36,6 @@ def read_dxf(file_path):
         border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
     final_clusters = iterative_merge(cluster_list, 5)
-    # final_clusters = cluster_list
 
     views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
