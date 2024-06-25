@@ -51,6 +51,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 block_texts.append(text_data)
             else:
                 entity_points = extract_points_from_entity(entity)
+                extracted_points_cache[entity] = entity_points
                 if entity_points:
                     transformed_points = apply_transform(transform_matrix, entity_points)
                     block_entity_to_points[entity].extend(transformed_points)
@@ -76,6 +77,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
             dimensions.append(entity)
         else:
             entity_points = extract_points_from_entity(entity)
+            extracted_points_cache[entity] = entity_points
             if entity_points:
                 transformed_points = apply_transform(parent_transform, entity_points)
                 entity_to_points[entity].extend(transformed_points)
@@ -86,10 +88,6 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
 
 
 def extract_points_from_entity(entity):
-    # Check if the points have already been extracted and cached
-    if entity in extracted_points_cache:
-        return extracted_points_cache[entity]
-
     num_segments = 72
     points = []
 
@@ -136,9 +134,11 @@ def extract_points_from_entity(entity):
                         angles = np.linspace(start_angle, end_angle, num_segments, endpoint=True)
                         points.extend([center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles])
 
-    # Cache the extracted points
-    extracted_points_cache[entity] = points
     return points
+
+
+def get_entity_points_from_cache(entity):
+    return extracted_points_cache[entity]
 
 
 def classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults):

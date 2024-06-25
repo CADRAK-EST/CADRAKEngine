@@ -5,7 +5,7 @@ from shapely.geometry import MultiPoint
 from collections import defaultdict
 from scipy.spatial import KDTree
 import numpy as np
-from app.parsers.parsing import extract_points_from_entity
+from app.parsers.parsing import get_entity_points_from_cache
 
 
 def assign_entities_to_clusters(entity_to_points, points, labels):
@@ -127,7 +127,7 @@ def iterative_merge(clusters, alpha):
 def entities_to_points(cluster):
     points = []
     for entity in cluster:
-        points.extend(extract_points_from_entity(entity))
+        points.extend(get_entity_points_from_cache(entity))
     return points
 
 
