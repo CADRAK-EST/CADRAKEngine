@@ -19,8 +19,6 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
 
     texts = {'texts': [], 'mtexts': []}
 
-    # texts = []
-
     def process_block(block, transform_matrix):
         block_points = []
         block_entity_to_points = defaultdict(list)
@@ -37,9 +35,6 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                     continue
 
                 nested_points, nested_entity_to_points, nested_transform_matrices, nested_texts = process_block(nested_block, combined_matrix)
-
-                nested_points, nested_entity_to_points, nested_transform_matrices, _ = process_block(nested_block,
-                                                                                                     combined_matrix)
 
                 block_points.extend(nested_points)
                 for k, v in nested_entity_to_points.items():
@@ -248,8 +243,9 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             # print(entity.attribs)
             print("INSERT found: " + entity.get_attrib_text(tag=str, default='Nothing found', search_const=True))
 
-            texts["texts"].append({"text": text, "height": height, "style": style,
-                                   "colour": entity_color, "layer": layer})
+            # texts["texts"].append({"text": text, "height": height, "style": style,
+            #                        "colour": entity_color, "layer": layer})
+            #texts["texts"].append({"text": text, "center": text_center, "height": height, "style": style, "colour": "#000000"})
 
         elif entity.dxftype() == 'MTEXT':
             """Strip unnecessary formatting tags from MTEXT content."""
@@ -263,9 +259,6 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             # color currently manually set to black as the entity_colour of the texts are usually white
 
             texts["mtexts"].append({"text": text, "center": text_center, "height": height, "style": style, "colour": "#000000"})
-
-           # texts["mtexts"].append({"text": text, "center": text_center, "height": height,
-                #                    "style": style, "colour": "#000000", "layer": layer})
 
     return texts
 

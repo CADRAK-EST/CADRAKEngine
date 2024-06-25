@@ -20,7 +20,7 @@ def read_dxf(file_path):
     metadata, layer_properties, header_defaults, all_entities = get_doc_data(doc)
 
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc, all_entities,
+    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities,
                                                                                                  metadata)
     print("\n1")
     print(texts)
@@ -28,10 +28,6 @@ def read_dxf(file_path):
     for dimension in dimensions:
         #print(dimension)
         corresponding_geometry_block_name = dimension.dxf.get('geometry', None)
-
-    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc_blocks,
-                                                                                                 all_entities)
-
 
     flat_points, labels = form_initial_clusters(entity_to_points)
 
@@ -45,24 +41,6 @@ def read_dxf(file_path):
     # Process border entities
     border_view = None
     if border_entities:
-
-        border_contours = {
-            "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
-            "splines": []
-        }
-        for be, matrix in border_entities:
-            block = doc.blocks.get(be.dxf.name)
-            _, block_entity_to_points, block_transform_matrices, _, _, _ = process_entities(doc, list(block), metadata,
-                                                                                         matrix)
-            print("\n2")
-            print(texts)
-            for entity in block_entity_to_points:
-                classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties,
-                                               header_defaults)
-                for key in border_contours.keys():
-                    border_contours[key].extend(classified.get(key, []))
-        border_view = {"contours": border_contours, "block_name": "Border"}
-
         border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
 
