@@ -5,7 +5,7 @@ from shapely.geometry import MultiPoint
 from collections import defaultdict
 from scipy.spatial import KDTree
 import numpy as np
-from app.parsers.parsing import extract_points_from_entity
+from app.parsers.parsing import get_entity_points_from_cache
 
 
 def assign_entities_to_clusters(entity_to_points, points, labels):
@@ -56,7 +56,7 @@ def form_initial_clusters(entity_to_points):
 
     # Step 3: Run the optimized CustomDBSCAN
     db = CustomDBSCAN(eps=5, min_samples=1)
-    return flat_points, db.fit_predict(flat_points)
+    return flat_points, db.fit_predict(flat_points)  # initial_labels, db.fit_predict(flat_points)
 
 
 def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
@@ -81,7 +81,10 @@ def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
 
             if alpha_shape1.intersects(alpha_shape2):
                 # Merge clusters
+                #print(clusters[idx1])
+                #print(clusters[idx2])
                 new_cluster = clusters[idx1] + clusters[idx2]
+                #print(new_cluster)
                 merged.add(idx1)
                 merged.add(idx2)
 
@@ -90,7 +93,7 @@ def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
                 new_alpha_shapes[new_idx] = get_alpha_shape(new_cluster, alpha)
                 cluster_mapping[new_idx] = new_cluster
                 merged_current = True
-                #print(f"Merged clusters {idx1} and {idx2} into new cluster {new_idx}.")
+                # print(f"Merged clusters {idx1} and {idx2} into new cluster {new_idx}.")
                 break
 
         if not merged_current:
@@ -110,12 +113,11 @@ def iterative_merge(clusters, alpha):
     alpha_shapes = {idx: get_alpha_shape(cluster, alpha) for idx, cluster in enumerate(clusters)}
 
     while True:
-        print(f"Iteration {iterations}: {len(clusters)} clusters before merge.")
         num_clusters_before = len(clusters)
+        print(f"Iteration {iterations}: {num_clusters_before} clusters before merge.")
         clusters, alpha_shapes = merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes)
-        num_clusters_after = len(clusters)
 
-        if num_clusters_before == num_clusters_after:
+        if num_clusters_before == len(clusters):
             break
         iterations += 1
 
@@ -125,15 +127,17 @@ def iterative_merge(clusters, alpha):
 def entities_to_points(cluster):
     points = []
     for entity in cluster:
-        points.extend(extract_points_from_entity(entity))
+        points.extend(get_entity_points_from_cache(entity))
     return points
 
 
 def get_alpha_shape(cluster, alpha=0.1):
     points = entities_to_points(cluster)
-    if len(points) < 4:
-        return MultiPoint(points).convex_hull
+    """
     try:
         return alphashape.alphashape(points, alpha)
     except Exception:
         return MultiPoint(points).convex_hull
+    """
+    return MultiPoint(points).convex_hull
+    return alphashape.alphashape(points, alpha)

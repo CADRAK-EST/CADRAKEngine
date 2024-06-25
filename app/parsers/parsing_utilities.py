@@ -52,8 +52,8 @@ def get_entity_lineweight(entity, layer_properties, header_defaults):
     if entity.dxf.hasattr('lineweight') and entity.dxf.lineweight != -1:  # -1 indicates "by layer"
         return entity.dxf.lineweight / 100.0
     else:
-        layer_lineweight = layer_properties[entity.dxf.layer]["lineweight"] if entity.dxf.layer in layer_properties else \
-            header_defaults["lineweight"]
+        layer_lineweight = layer_properties[entity.dxf.layer]["lineweight"] if entity.dxf.layer in layer_properties\
+            else header_defaults["lineweight"]
         return layer_lineweight / 100.0 if layer_lineweight > 0 else header_defaults["lineweight"] / 100.0
 
 
