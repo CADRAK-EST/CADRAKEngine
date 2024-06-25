@@ -24,8 +24,10 @@ def read_dxf(file_path):
     }
     all_entities = list(doc.modelspace())
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc, all_entities,
+    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc, all_entities,
                                                                                                  metadata)
+    print("\n1")
+    print(texts)
 
     for dimension in dimensions:
         #print(dimension)
@@ -70,8 +72,10 @@ def read_dxf(file_path):
         }
         for be, matrix in border_entities:
             block = doc.blocks.get(be.dxf.name)
-            _, block_entity_to_points, block_transform_matrices, _, _ = process_entities(doc, list(block), metadata,
+            _, block_entity_to_points, block_transform_matrices, _, _, _ = process_entities(doc, list(block), metadata,
                                                                                          matrix)
+            print("\n2")
+            print(texts)
             for entity in block_entity_to_points:
                 classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties,
                                                header_defaults)
@@ -83,7 +87,12 @@ def read_dxf(file_path):
 
     views = [{"contours": classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
-    texts = [classify_text_entities(all_entities, metadata, layer_properties, header_defaults)]
+
+    text_entities = classify_text_entities(all_entities, metadata, layer_properties, header_defaults)
+
+    # Merge texts from both process_entities and classify_text_entities
+    texts['texts'].extend(text_entities['texts'])
+    texts['mtexts'].extend(text_entities['mtexts'])
 
     if border_view:
         views.append(border_view)
@@ -93,7 +102,7 @@ def read_dxf(file_path):
 
 def initialize(file_path, visualize=False, save=False, analyze=True, log_times=True):
     parse_time = time.time()
-    views, dimensions, metadata, texts = read_dxf(file_path)
+    views, dimensions, metadata, all_texts = read_dxf(file_path)
     info_boxes = []
     parse_time = time.time() - parse_time
 
@@ -103,7 +112,7 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
         indicate_mistakes(views)
         analyze_time = time.time() - analyze_time
 
-    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": [], "texts": texts}
+    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": [], "texts": all_texts}
 
     if visualize:
         visualize_time = time.time()
