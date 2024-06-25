@@ -56,7 +56,7 @@ def form_initial_clusters(entity_to_points):
 
     # Step 3: Run the optimized CustomDBSCAN
     db = CustomDBSCAN(eps=5, min_samples=1)
-    return flat_points, db.fit_predict(flat_points)
+    return flat_points, db.fit_predict(flat_points)  # initial_labels
 
 
 def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
@@ -90,7 +90,7 @@ def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
                 new_alpha_shapes[new_idx] = get_alpha_shape(new_cluster, alpha)
                 cluster_mapping[new_idx] = new_cluster
                 merged_current = True
-                #print(f"Merged clusters {idx1} and {idx2} into new cluster {new_idx}.")
+                # print(f"Merged clusters {idx1} and {idx2} into new cluster {new_idx}.")
                 break
 
         if not merged_current:

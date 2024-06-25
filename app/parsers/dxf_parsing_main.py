@@ -5,7 +5,8 @@ import logging
 import cProfile
 import pstats
 import time
-from app.parsers.parsing import process_entities, classify_entities, classify_text_entities, get_doc_data, process_border_block
+from app.parsers.parsing import (process_entities, classify_entities, classify_text_entities, get_doc_data,
+                                 process_border_block)
 from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters
 from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
@@ -18,7 +19,8 @@ def read_dxf(file_path):
     doc_blocks = doc.blocks
     metadata, layer_properties, header_defaults, all_entities = get_doc_data(doc)
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc_blocks, all_entities)
+    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc_blocks,
+                                                                                                 all_entities)
 
     flat_points, labels = form_initial_clusters(entity_to_points)
 
@@ -83,17 +85,19 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
 
 def mistake_analysis(views, dimensions):
     for view in views:
-        ids_of_mistaken_lines, ids_of_potential_mistaken_lines = find_lengths(dimensions, view["contours"]["lines"], view["contours"]["circles"])
+        ids_of_mistaken_lines, ids_of_potential_mistaken_lines = find_lengths(dimensions, view["contours"]["lines"],
+                                                                              view["contours"]["circles"])
         view["mistakes"] = {"potential": {}, "certain": {}}
         view["mistakes"]["certain"]["lines"] = ids_of_mistaken_lines
         view["mistakes"]["potential"]["lines"] = ids_of_potential_mistaken_lines
-        logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} mistakes and {len(ids_of_potential_mistaken_lines)} potential mistakes.")
+        logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} mistakes and "
+                    f"{len(ids_of_potential_mistaken_lines)} potential mistakes.")
     return views
 
 
 def save_json(page):
-    with open("testing_data.json", "w") as f:
-        json.dump(page, f, indent=4)
+    with open("testing_data.json", "w") as json_file:
+        json.dump(page, json_file, indent=4)
 
 
 if __name__ == "__main__":
@@ -116,7 +120,7 @@ if __name__ == "__main__":
             ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
 
         # Optionally, print profiling results to the console
-        #ps = pstats.Stats(pr)
-        #ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
+        # ps = pstats.Stats(pr)
+        # ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
     else:
         initialize(file_path, visualize=True, save=False, analyze=True, log_times=True)

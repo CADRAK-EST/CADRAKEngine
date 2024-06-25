@@ -1,10 +1,10 @@
 ﻿import ezdxf
 import numpy as np
 import re
-import os
 from collections import defaultdict
 from app.parsers.utilities import format_point2, transform_point, apply_transform
-from app.parsers.parsing_utilities import get_entity_color, get_entity_lineweight, get_entity_linetype, get_entity_layer, get_insert_transform
+from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweight, get_entity_linetype,
+                                           get_entity_layer, get_insert_transform)
 
 
 def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
@@ -13,7 +13,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
     transform_matrices = {}
     border_entities = []
     dimensions = []
-    texts = []
+    # texts = []
 
     def process_block(block, transform_matrix):
         block_points = []
@@ -29,7 +29,8 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                     border_entities.append((entity, combined_matrix))
                     transform_matrices[entity] = combined_matrix
                     continue
-                nested_points, nested_entity_to_points, nested_transform_matrices, _ = process_block(nested_block, combined_matrix)
+                nested_points, nested_entity_to_points, nested_transform_matrices, _ = process_block(nested_block,
+                                                                                                     combined_matrix)
                 block_points.extend(nested_points)
                 for k, v in nested_entity_to_points.items():
                     block_entity_to_points[k].extend(v)
@@ -62,7 +63,8 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 border_entities.append((entity, insert_matrix))
                 transform_matrices[entity] = insert_matrix
                 continue
-            block_points, block_entity_to_points, block_transform_matrices, block_texts = process_block(block, insert_matrix)
+            block_points, block_entity_to_points, block_transform_matrices, block_texts = process_block(block,
+                                                                                                        insert_matrix)
             points.extend(block_points)
             for k, v in block_entity_to_points.items():
                 entity_to_points[k].extend(v)
@@ -145,7 +147,8 @@ def classify_entities(cluster, transform_matrices, metadata, layer_properties, h
             start = format_point2(transform_point(entity.dxf.start.x, entity.dxf.start.y, transform_matrix))
             end = format_point2(transform_point(entity.dxf.end.x, entity.dxf.end.y, transform_matrix))
             contours["lines"].append(
-                {"start": start, "end": end, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
+                {"start": start, "end": end, "colour": entity_color, "weight": line_weight,
+                 "style": line_style, "layer": layer})
         elif entity.dxftype() == 'CIRCLE':
             center = format_point2(transform_point(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             contours["circles"].append(
@@ -206,7 +209,8 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             text = entity.dxf.text
             height = entity.dxf.height
             style = entity.dxf.style
-            texts["texts"].append({"text": text, "height": height, "style": style, "colour": entity_color, "layer": layer})
+            texts["texts"].append({"text": text, "height": height, "style": style,
+                                   "colour": entity_color, "layer": layer})
         elif entity.dxftype() == 'MTEXT':
             print("Found an mtext!")
             """Strip unnecessary formatting tags from MTEXT content."""
@@ -218,7 +222,8 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             height = entity.dxf.char_height
             style = entity.dxf.style
             # color currently manually set to black as the entity_colour of the texts are usually white
-            texts["mtexts"].append({"text": text, "center": text_center, "height": height, "style": style, "colour": "#000000", "layer": layer})
+            texts["mtexts"].append({"text": text, "center": text_center, "height": height,
+                                    "style": style, "colour": "#000000", "layer": layer})
     return texts
 
 
