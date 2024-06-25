@@ -51,9 +51,8 @@ def read_dxf(file_path):
     text_entities = classify_text_entities(all_entities, transform_matrices, metadata, layer_properties, header_defaults)
 
     # Merge texts from both process_entities and classify_text_entities
-    # texts['texts'].extend(text_entities['texts'])
-    # texts['mtexts'].extend(text_entities['mtexts'])
-    texts['texts']
+    texts['texts'].extend(text_entities['texts'])
+    texts['mtexts'].extend(text_entities['mtexts'])
 
     if border_view:
        views.append(border_view)
