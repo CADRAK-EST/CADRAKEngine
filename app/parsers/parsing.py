@@ -17,13 +17,13 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
     border_entities = []
     dimensions = []
 
-    texts = {'texts': [], 'mtexts': []}
+    texts = {'texts': [], 'mtexts': [], 'attdefs': []}
 
     def process_block(block, transform_matrix):
         block_points = []
         block_entity_to_points = defaultdict(list)
         block_transform_matrices = {}
-        block_texts = {'texts': [], 'mtexts': []}
+        block_texts = {'texts': [], 'mtexts': [], 'attdefs': []}
         for entity in block:
             if entity.dxftype() == 'INSERT':
                 insert_matrix = get_insert_transform(entity)
@@ -66,7 +66,15 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 block_texts['mtexts'].append(text_data)
                 print("The MTEXT: " + text)
             elif entity.dxftype() == "ATTDEF":
-                #print("LOL")
+                text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
+                text_data = {
+                    "text": entity.dxf.text,
+                    "center": text_center,
+                    "height": entity.dxf.height,
+                    "style": entity.dxf.style,
+                    "color": "#000000",
+                }
+                block_texts['attdefs'].append(text_data)
                 print("ATTDEF found: " + entity.dxf.text)
             else:
                 entity_points = extract_points_from_entity(entity)
@@ -89,7 +97,6 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
             block_points, block_entity_to_points, block_transform_matrices, block_texts = process_block(block,
                                                                                                         insert_matrix)
             points.extend(block_points)
-            texts.update(block_texts)
             for k, v in block_entity_to_points.items():
                 entity_to_points[k].extend(v)
             transform_matrices.update(block_transform_matrices)
@@ -223,7 +230,7 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
 
 
 def classify_text_entities(all_entities, transform_matrices, metadata, layer_properties, header_defaults):
-    texts = {"texts": [], "mtexts": []}
+    texts = {'texts': [], 'mtexts': [], 'attdefs': []}
     for entity in all_entities:
         if entity.dxftype() == 'ACIDBLOCKREFERENCE':
             continue
@@ -255,7 +262,6 @@ def classify_text_entities(all_entities, transform_matrices, metadata, layer_pro
             # color currently manually set to black as the entity_colour of the texts are usually white
 
             texts["mtexts"].append({"text": text, "center": text_center, "height": height, "style": style, "color": "#000000"})
-
     return texts
 
 

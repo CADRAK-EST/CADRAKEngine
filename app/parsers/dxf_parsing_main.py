@@ -53,6 +53,7 @@ def read_dxf(file_path):
     # Merge texts from both process_entities and classify_text_entities
     texts['texts'].extend(text_entities['texts'])
     texts['mtexts'].extend(text_entities['mtexts'])
+    texts['attdefs'].extend(text_entities['attdefs'])
 
     if border_view:
        views.append(border_view)
