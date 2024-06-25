@@ -49,11 +49,12 @@ def read_dxf(file_path):
     views = [{"contours": classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
 
-    text_entities = classify_text_entities(all_entities, metadata, layer_properties, header_defaults)
+    text_entities = classify_text_entities(all_entities, transform_matrices, metadata, layer_properties, header_defaults)
 
     # Merge texts from both process_entities and classify_text_entities
-    texts['texts'].extend(text_entities['texts'])
-    texts['mtexts'].extend(text_entities['mtexts'])
+    # texts['texts'].extend(text_entities['texts'])
+    # texts['mtexts'].extend(text_entities['mtexts'])
+    texts['texts']
 
     if border_view:
        views.append(border_view)

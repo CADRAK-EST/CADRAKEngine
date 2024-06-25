@@ -43,7 +43,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 for text_type, text_list in nested_texts.items():
                     block_texts[text_type].extend(text_list)
             elif entity.dxftype() == 'TEXT':
-                text_center = entity.dxf.insert.x, entity.dxf.insert.y
+                text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
                 text_data = {
                     "text": entity.dxf.text,
                     "center": text_center,
@@ -53,9 +53,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 }
                 block_texts['texts'].append(text_data)
             elif entity.dxftype() == 'MTEXT':
-                center = np.array([entity.dxf.insert.x, entity.dxf.insert.y])
-                transformed_center = [center]
-                text_center = apply_transform(transform_matrix, transformed_center)[0]
+                text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
                 text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}', '', entity.text)
                 text = re.sub(r'{|}', '', text)
                 text_data = {
@@ -66,6 +64,7 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                     "color": "#000000"
                 }
                 block_texts['mtexts'].append(text_data)
+                print("The MTEXT: " + text)
             elif entity.dxftype() == "ATTDEF":
                 print("LOL")
                 print("ATTDEF found: " + entity.dxf.text)
@@ -223,7 +222,7 @@ def classify_entities(cluster, transform_matrices, metadata, layer_properties, h
     return contours
 
 
-def classify_text_entities(all_entities, metadata, layer_properties, header_defaults):
+def classify_text_entities(all_entities, transform_matrices, metadata, layer_properties, header_defaults):
     texts = {"texts": [], "mtexts": []}
     for entity in all_entities:
         if entity.dxftype() == 'ACIDBLOCKREFERENCE':
@@ -236,8 +235,9 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             text = entity.dxf.text
             height = entity.dxf.height
             style = entity.dxf.style
+            text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
 
-            texts["texts"].append({"text": text, "height": height, "style": style, "color": "#000000", "layer": layer})
+            texts["texts"].append({"text": text,"center": text_center, "height": height, "style": style, "color": "#000000", "layer": layer})
         elif entity.dxftype() == "INSERT":
             # print("Ins name: " + entity.dxf.name)
             # print(entity.attribs)
@@ -248,8 +248,8 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             # Remove font definitions and other formatting tags
             text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}', '', entity.text)
             # Remove any remaining braces and other extraneous characters
-            text = re.sub(r'{|}', '', text)
-            text_center = entity.dxf.insert.x, entity.dxf.insert.y
+            text = re.sub(r'{|}', '', text)    
+            text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
             height = entity.dxf.char_height
             style = entity.dxf.style
             # color currently manually set to black as the entity_colour of the texts are usually white
