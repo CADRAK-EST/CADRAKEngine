@@ -138,8 +138,13 @@ def extract_points_from_entity(entity):
                                      major_axis_length * np.cos(a) * np.sin(rotation_angle) + minor_axis_length * np.sin(a) * np.cos(rotation_angle)]) for a in angles]
     elif entity.dxftype() == 'SPLINE':
         points = [np.array([point.x, point.y]) for point in entity.fit_points]
+    elif entity.dxftype() == 'LWPOLYLINE':
+        points = [np.array([vertex.x, vertex.y]) for vertex in entity]
     elif entity.dxftype() == 'POLYLINE':
         points = [np.array([vertex.dxf.location.x, vertex.dxf.location.y]) for vertex in entity.vertices]
+    elif entity.dxftype() == 'SOLID':
+        points = [np.array([entity.dxf.vtx0.x, entity.dxf.vtx0.y]), np.array([entity.dxf.vtx1.x, entity.dxf.vtx1.y]),
+                  np.array([entity.dxf.vtx2.x, entity.dxf.vtx2.y]), np.array([entity.dxf.vtx3.x, entity.dxf.vtx3.y])]
     elif entity.dxftype() == 'HATCH':
         for path in entity.paths:
             if isinstance(path, ezdxf.entities.PolylinePath):
@@ -190,19 +195,18 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
                  "end_angle": entity.dxf.end_angle, "colour": entity_color, "weight": line_weight, "style": line_style,
                  "layer": layer})
         elif entity.dxftype() == 'LWPOLYLINE':
-            points = [format_point2(transform_point(p[0], p[1], transform_matrix)) for p in entity.get_points()]
+            #points = [format_point2(transform_point(p[0], p[1], transform_matrix)) for p in entity.get_points()]
+            points = [format_point2(p) for p in entity_to_points[entity]]
             contours["lwpolylines"].append(
                 {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'POLYLINE':
-            points = [format_point2(transform_point(v.dxf.location.x, v.dxf.location.y, transform_matrix)) for v in
-                      entity.vertices]
+            #points = [format_point2(transform_point(v.dxf.location.x, v.dxf.location.y, transform_matrix)) for v in
+            #          entity.vertices]
+            points = [format_point2(p) for p in entity_to_points[entity]]
             contours["polylines"].append(
                 {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'SOLID':
-            points = [format_point2(transform_point(entity.dxf.vtx0.x, entity.dxf.vtx0.y, transform_matrix)),
-                      format_point2(transform_point(entity.dxf.vtx1.x, entity.dxf.vtx1.y, transform_matrix)),
-                      format_point2(transform_point(entity.dxf.vtx2.x, entity.dxf.vtx2.y, transform_matrix)),
-                      format_point2(transform_point(entity.dxf.vtx3.x, entity.dxf.vtx3.y, transform_matrix))]
+            points = [format_point2(p) for p in entity_to_points[entity]]
             contours["solids"].append(
                 {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'ELLIPSE':
@@ -216,7 +220,7 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
                                          "rotation_angle": np.degrees(rotation_angle), "colour": entity_color,
                                          "weight": line_weight, "style": line_style, "layer": layer})
         elif entity.dxftype() == 'SPLINE':
-            points = [format_point2(transform_point(p[0], p[1], transform_matrix)) for p in entity.fit_points]
+            points = [format_point2(p) for p in entity_to_points[entity]]
             contours["splines"].append(
                 {"points": points, "colour": entity_color, "weight": line_weight, "style": line_style, "layer": layer})
     return contours
