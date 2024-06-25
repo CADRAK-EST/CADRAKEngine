@@ -57,10 +57,11 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
                 text_height = transform_height(entity.dxf.char_height, transform_matrix)
                 text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
+                text_direction = list(entity.dxf.text_direction)
                 text_data = {
                     "text": text,
                     "center": text_center,
-                    "rotation": entity.dxf.rotation,
+                    "text_direction": text_direction,
                     "height": text_height,
                     "style": entity.dxf.style,
                     "color": "#000000"
@@ -259,10 +260,11 @@ def classify_text_entities(all_entities, transform_matrices, metadata, layer_pro
             text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
             text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
             text_height = transform_height(entity.dxf.char_height, np.identity(3))
+            text_direction = list(entity.dxf.text_direction)
             text_data = {
                 "text": text,
                 "center": text_center,
-                "rotation": entity.dxf.rotation,
+                "text_direction": text_direction,
                 "height": text_height,
                 "style": entity.dxf.style,
                 "color": "#000000"
