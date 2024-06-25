@@ -2,7 +2,7 @@
 import numpy as np
 import re
 from collections import defaultdict
-from app.parsers.utilities import format_point2, transform_point, apply_transform
+from app.parsers.utilities import format_point2, transform_point, transform_height, apply_transform
 from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweight, get_entity_linetype,
                                            get_entity_layer, get_insert_transform)
 
@@ -44,31 +44,35 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                     block_texts[text_type].extend(text_list)
             elif entity.dxftype() == 'TEXT':
                 text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
+                text_height = transform_height(entity.dxf.height, transform_matrix)
                 text_data = {
                     "text": entity.dxf.text,
                     "center": text_center,
-                    "height": entity.dxf.height,
+                    "height": text_height,
                     "style": entity.dxf.style,
                     "color": "#000000"
                 }
                 block_texts['texts'].append(text_data)
             elif entity.dxftype() == 'MTEXT':
                 text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
+                text_height = transform_height(entity.dxf.char_height, transform_matrix)
                 text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
                 text_data = {
                     "text": text,
                     "center": text_center,
-                    "height": entity.dxf.char_height,
+                    "rotation": entity.dxf.rotation,
+                    "height": text_height,
                     "style": entity.dxf.style,
                     "color": "#000000"
                 }
                 block_texts['mtexts'].append(text_data)
             elif entity.dxftype() == "ATTDEF":
                 text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
+                text_height = transform_height(entity.dxf.height, transform_matrix)
                 text_data = {
                     "text": entity.dxf.text,
                     "center": text_center,
-                    "height": entity.dxf.height,
+                    "height": text_height,
                     "style": entity.dxf.style,
                     "color": "#000000",
                 }
@@ -241,10 +245,11 @@ def classify_text_entities(all_entities, transform_matrices, metadata, layer_pro
         layer = get_entity_layer(entity, layer_properties, header_defaults)
         if entity.dxftype() == 'TEXT':
             text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
+            text_height = transform_height(entity.dxf.height, np.identity(3))
             text_data = {
                 "text": entity.dxf.text,
                 "center": text_center,
-                "height": entity.dxf.height,
+                "height": text_height,
                 "style": entity.dxf.style,
                 "color": "#000000"
             }
@@ -253,10 +258,12 @@ def classify_text_entities(all_entities, transform_matrices, metadata, layer_pro
         elif entity.dxftype() == 'MTEXT':
             text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
             text_center = transform_point(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
+            text_height = transform_height(entity.dxf.char_height, np.identity(3))
             text_data = {
                 "text": text,
                 "center": text_center,
-                "height": entity.dxf.char_height,
+                "rotation": entity.dxf.rotation,
+                "height": text_height,
                 "style": entity.dxf.style,
                 "color": "#000000"
             }

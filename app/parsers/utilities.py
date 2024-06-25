@@ -17,6 +17,10 @@ def transform_point(x, y, matrix):
     point = np.dot(matrix, [x, y, 1])
     return point[0], point[1]
 
+def transform_height(y, matrix):
+    point = np.dot(matrix, [0, y, 0])
+    return point[1]
+
 
 def apply_transform(matrix, points):
     return [transform_point(p[0], p[1], matrix) for p in points]
