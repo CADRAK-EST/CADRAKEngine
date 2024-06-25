@@ -37,13 +37,14 @@ def read_dxf(file_path):
         border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
     final_clusters = iterative_merge(cluster_list, 5)
+    # final_clusters = cluster_list
 
     views = [{"contours": classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
     texts = [classify_text_entities(all_entities, metadata, layer_properties, header_defaults)]
 
     if border_view:
-        views.append(border_view)
+       views.append(border_view)
 
     return views, dimensions, metadata, texts
 
@@ -101,7 +102,7 @@ def save_json(page):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "Kaur2_only2D.dxf")
+    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
 
     profile = False
 

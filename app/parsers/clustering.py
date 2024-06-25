@@ -56,7 +56,7 @@ def form_initial_clusters(entity_to_points):
 
     # Step 3: Run the optimized CustomDBSCAN
     db = CustomDBSCAN(eps=5, min_samples=1)
-    return flat_points, db.fit_predict(flat_points)  # initial_labels
+    return flat_points, db.fit_predict(flat_points)  # initial_labels, db.fit_predict(flat_points)
 
 
 def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
@@ -81,7 +81,10 @@ def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
 
             if alpha_shape1.intersects(alpha_shape2):
                 # Merge clusters
+                #print(clusters[idx1])
+                #print(clusters[idx2])
                 new_cluster = clusters[idx1] + clusters[idx2]
+                #print(new_cluster)
                 merged.add(idx1)
                 merged.add(idx2)
 
@@ -130,9 +133,11 @@ def entities_to_points(cluster):
 
 def get_alpha_shape(cluster, alpha=0.1):
     points = entities_to_points(cluster)
-    if len(points) < 4:
-        return MultiPoint(points).convex_hull
+    """
     try:
         return alphashape.alphashape(points, alpha)
     except Exception:
         return MultiPoint(points).convex_hull
+    """
+    return MultiPoint(points).convex_hull
+    return alphashape.alphashape(points, alpha)

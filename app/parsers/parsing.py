@@ -6,6 +6,9 @@ from app.parsers.utilities import format_point2, transform_point, apply_transfor
 from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweight, get_entity_linetype,
                                            get_entity_layer, get_insert_transform)
 
+# Global cache for storing extracted points
+extracted_points_cache = {}
+
 
 def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
     points = []
@@ -83,55 +86,59 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
 
 
 def extract_points_from_entity(entity):
+    # Check if the points have already been extracted and cached
+    if entity in extracted_points_cache:
+        return extracted_points_cache[entity]
+
     num_segments = 72
+    points = []
+
     if entity.dxftype() == 'LINE':
-        return [np.array(entity.dxf.start), np.array(entity.dxf.end)]
+        points = [np.array([entity.dxf.start.x, entity.dxf.start.y]), np.array([entity.dxf.end.x, entity.dxf.end.y])]
     elif entity.dxftype() == 'CIRCLE':
-        center = np.array(entity.dxf.center)
+        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
         radius = entity.dxf.radius
         angles = np.linspace(0, 2 * np.pi, num_segments, endpoint=False)
-        return [center + radius * np.array([np.cos(a), np.sin(a), 0]) for a in angles]
+        points = [center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles]
     elif entity.dxftype() == 'ARC':
-        center = np.array(entity.dxf.center)
+        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
         radius = entity.dxf.radius
         start_angle = np.radians(entity.dxf.start_angle)
         end_angle = np.radians(entity.dxf.end_angle)
         angles = np.linspace(start_angle, end_angle, num_segments, endpoint=True)
-        return [center + radius * np.array([np.cos(a), np.sin(a), 0]) for a in angles]
+        points = [center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles]
     elif entity.dxftype() == 'ELLIPSE':
-        center = np.array(entity.dxf.center)
+        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
         major_axis = np.array([entity.dxf.major_axis.x, entity.dxf.major_axis.y])
         major_axis_length = np.linalg.norm(major_axis)
         minor_axis_length = major_axis_length * entity.dxf.ratio
         rotation_angle = np.arctan2(major_axis[1], major_axis[0])
         angles = np.linspace(0, 2 * np.pi, num_segments, endpoint=False)
-        return [center + np.array([major_axis_length * np.cos(a) * np.cos(rotation_angle) - minor_axis_length * np.sin(
-            a) * np.sin(rotation_angle),
-                                   major_axis_length * np.cos(a) * np.sin(rotation_angle) + minor_axis_length * np.sin(
-                                       a) * np.cos(rotation_angle), 0]) for a in angles]
+        points = [center + np.array([major_axis_length * np.cos(a) * np.cos(rotation_angle) - minor_axis_length * np.sin(a) * np.sin(rotation_angle),
+                                     major_axis_length * np.cos(a) * np.sin(rotation_angle) + minor_axis_length * np.sin(a) * np.cos(rotation_angle)]) for a in angles]
     elif entity.dxftype() == 'SPLINE':
-        return [np.array(point) for point in entity.fit_points]
+        points = [np.array([point.x, point.y]) for point in entity.fit_points]
     elif entity.dxftype() == 'POLYLINE':
-        return [np.array(vertex.dxf.location) for vertex in entity.vertices]
+        points = [np.array([vertex.dxf.location.x, vertex.dxf.location.y]) for vertex in entity.vertices]
     elif entity.dxftype() == 'HATCH':
-        points = []
         for path in entity.paths:
             if isinstance(path, ezdxf.entities.PolylinePath):
-                points.extend([np.array((v.x, v.y, 0)) for v in path.vertices])
+                points.extend([np.array([v.x, v.y]) for v in path.vertices])
             elif isinstance(path, ezdxf.entities.EdgePath):
                 for edge in path.edges:
                     if edge.EDGE_TYPE == 'LineEdge':
-                        points.extend(
-                            [np.array((edge.start.x, edge.start.y, 0)), np.array((edge.end.x, edge.end.y, 0))])
+                        points.extend([np.array([edge.start.x, edge.start.y]), np.array([edge.end.x, edge.end.y])])
                     elif edge.EDGE_TYPE == 'ArcEdge':
-                        center = np.array(edge.center)
+                        center = np.array([edge.center.x, edge.center.y])
                         radius = edge.radius
                         start_angle = np.radians(edge.start_angle)
                         end_angle = np.radians(edge.end_angle)
                         angles = np.linspace(start_angle, end_angle, num_segments, endpoint=True)
-                        points.extend([center + radius * np.array([np.cos(a), np.sin(a), 0]) for a in angles])
-        return points
-    return []
+                        points.extend([center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles])
+
+    # Cache the extracted points
+    extracted_points_cache[entity] = points
+    return points
 
 
 def classify_entities(cluster, transform_matrices, metadata, layer_properties, header_defaults):
