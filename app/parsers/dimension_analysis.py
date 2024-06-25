@@ -1,5 +1,5 @@
 ﻿import networkx as nx
-from app.parsers.utilities import normalize_point, is_close, normalize_point2
+from app.parsers.utilities import format_point, is_close
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,8 +14,8 @@ def process_dimensions_to_graphs(dimensions, scale=1e3):
 
     for dim in dimensions:
         if dim.dxf.hasattr('defpoint4'):
-            start = normalize_point((dim.dxf.get('defpoint', None).x, dim.dxf.get('defpoint', None).y), scale)
-            end = normalize_point((dim.dxf.get('defpoint4', None).x, dim.dxf.get('defpoint4', None).y), scale)
+            start = format_point((dim.dxf.get('defpoint', None).x, dim.dxf.get('defpoint', None).y), scale)
+            end = format_point((dim.dxf.get('defpoint4', None).x, dim.dxf.get('defpoint4', None).y), scale)
             centre = ((start[0] + end[0]) / 2, (start[1] + end[1]) / 2)  # Center as midpoint of start and end points
 
             dimension_dict = {
@@ -27,8 +27,8 @@ def process_dimensions_to_graphs(dimensions, scale=1e3):
 
         else:
             dimension_dict = {
-                'start': normalize_point((dim.dxf.get('defpoint2', None).x, dim.dxf.get('defpoint2', None).y), scale),
-                'end': normalize_point((dim.dxf.get('defpoint3', None).x, dim.dxf.get('defpoint3', None).y), scale),
+                'start': format_point((dim.dxf.get('defpoint2', None).x, dim.dxf.get('defpoint2', None).y), scale),
+                'end': format_point((dim.dxf.get('defpoint3', None).x, dim.dxf.get('defpoint3', None).y), scale),
                 'length': round(dim.dxf.get('actual_measurement', None)),
                 'line_type': 'linear'
             }

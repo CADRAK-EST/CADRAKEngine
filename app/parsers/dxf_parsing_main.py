@@ -5,9 +5,9 @@ import logging
 import cProfile
 import pstats
 import time
-from app.parsers.parsing import process_entities, classify_entities, classify_text_entities
+from app.parsers.parsing import process_entities, classify_entities, classify_text_entities, get_doc_data, process_border_block
 from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters
-from app.parsers.matplotlib_visualization import plot_entities, indicate_mistakes
+from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
 
 logger = logging.getLogger(__name__)
@@ -15,27 +15,12 @@ logger = logging.getLogger(__name__)
 
 def read_dxf(file_path):
     doc = ezdxf.readfile(file_path)
-    metadata = {
-        "filename": os.path.basename(file_path),
-        "units": doc.header.get('$INSUNITS', 0),
-        "software_version": doc.header.get('$ACADVER', 'Unknown'),
-        "background_color": "0xFFFFFF",
-        "bounding_box": doc.header.get('$EXTMIN', None)[:2] + doc.header.get('$EXTMAX', None)[:2]
-    }
-    all_entities = list(doc.modelspace())
+    doc_blocks = doc.blocks
+    metadata, layer_properties, header_defaults, all_entities = get_doc_data(doc)
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc, all_entities,
-                                                                                                 metadata)
-
-    for dimension in dimensions:
-        #print(dimension)
-        corresponding_geometry_block_name = dimension.dxf.get('geometry', None)
+    points, entity_to_points, transform_matrices, border_entities, dimensions = process_entities(doc_blocks, all_entities)
 
     flat_points, labels = form_initial_clusters(entity_to_points)
-
-    #flat_points = np.array([pt for sublist in entity_to_points.values() for pt in sublist])
-    #db = DBSCAN(eps=5, min_samples=1).fit(flat_points)
-    #labels = db.labels_
 
     # Exclude border entities from clustering
     clusters = assign_entities_to_clusters(
@@ -44,40 +29,10 @@ def read_dxf(file_path):
     # Convert clusters dictionary to list of lists
     cluster_list = list(clusters.values())
 
-    # Build layer properties dictionary
-    layer_properties = {}
-    for layer in doc.layers:
-        layer_properties[layer.dxf.name] = {
-            "color": layer.dxf.get('color', 256),
-            "lineweight": layer.dxf.get('lineweight', -1),
-            "linetype": layer.dxf.get('linetype', 'BYLAYER'),
-            "name": layer.dxf.get('name', 'noname')
-        }
-
-    # Read the default values from the DXF header
-    header_defaults = {
-        "color": doc.header.get('$CECOLOR', 256),  # Default color
-        "lineweight": doc.header.get('$CELWEIGHT', -1),  # Default lineweight
-        "linetype": doc.header.get('$CELTYPE', 'BYLAYER')  # Default line type
-    }
-
     # Process border entities
     border_view = None
     if border_entities:
-        border_contours = {
-            "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
-            "splines": []
-        }
-        for be, matrix in border_entities:
-            block = doc.blocks.get(be.dxf.name)
-            _, block_entity_to_points, block_transform_matrices, _, _ = process_entities(doc, list(block), metadata,
-                                                                                         matrix)
-            for entity in block_entity_to_points:
-                classified = classify_entities([entity], block_transform_matrices, metadata, layer_properties,
-                                               header_defaults)
-                for key in border_contours.keys():
-                    border_contours[key].extend(classified.get(key, []))
-        border_view = {"contours": border_contours, "block_name": "Border"}
+        border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
     final_clusters = iterative_merge(cluster_list, 5)
 
@@ -142,7 +97,7 @@ def save_json(page):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
+    file_path = os.path.join(os.getcwd(), "../../test_data", "Kaur2_only2D.dxf")
 
     profile = False
 

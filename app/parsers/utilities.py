@@ -1,16 +1,16 @@
 ﻿import numpy as np
 
 
-def normalize_point(point, scale=1e3):  # Normalizing function
+def format_point(point, scale=1e3):  # Normalizing function, returns tuple
     return round(point[0] * scale) / scale, round(point[1] * scale) / scale
+
+
+def format_point2(point, scale=1e3):  # Normalizing function, returns dictionary
+    return {"x": round(point[0] * scale) / scale, "y": round(point[1] * scale) / scale}
 
 
 def is_close(a, b, tol=1e-9):
     return abs(a - b) <= tol
-
-
-def normalize_point2(point, scale=1e3):  # Normalizing function
-    return {"x": round(point[0] * scale) / scale, "y": round(point[1] * scale) / scale}
 
 
 def transform_point(x, y, matrix):
