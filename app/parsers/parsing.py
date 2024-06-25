@@ -43,11 +43,9 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 for text_type, text_list in nested_texts.items():
                     block_texts[text_type].extend(text_list)
             elif entity.dxftype() == 'TEXT':
-                text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}', '', entity.dxf.text)
-                text = re.sub(r'{|}', '', text)
                 text_center = entity.dxf.insert.x, entity.dxf.insert.y
                 text_data = {
-                    "text": text,
+                    "text": entity.dxf.text,
                     "center": text_center,
                     "height": entity.dxf.height,
                     "style": entity.dxf.style,
@@ -55,9 +53,11 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 }
                 block_texts['texts'].append(text_data)
             elif entity.dxftype() == 'MTEXT':
+                center = np.array([entity.dxf.insert.x, entity.dxf.insert.y])
+                transformed_center = [center]
+                text_center = apply_transform(transform_matrix, transformed_center)[0]
                 text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}', '', entity.text)
                 text = re.sub(r'{|}', '', text)
-                text_center = entity.dxf.insert.x, entity.dxf.insert.y
                 text_data = {
                     "text": text,
                     "center": text_center,
@@ -237,17 +237,12 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             height = entity.dxf.height
             style = entity.dxf.style
 
-            texts["texts"].append({"text": text, "height": height, "style": style, "colour": entity_color, "layer": layer})
+            texts["texts"].append({"text": text, "height": height, "style": style, "color": "#000000", "layer": layer})
         elif entity.dxftype() == "INSERT":
             # print("Ins name: " + entity.dxf.name)
             # print(entity.attribs)
             #print("INSERT found: " + entity.get_attrib_text(tag=str, default='Nothing found', search_const=True))
-
-            # texts["texts"].append({"text": text, "height": height, "style": style,
-            #                        "colour": entity_color, "layer": layer})
-            #texts["texts"].append({"text": text, "center": text_center, "height": height, "style": style, "colour": "#000000"})
             pass
-
         elif entity.dxftype() == 'MTEXT':
             """Strip unnecessary formatting tags from MTEXT content."""
             # Remove font definitions and other formatting tags
@@ -259,7 +254,7 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             style = entity.dxf.style
             # color currently manually set to black as the entity_colour of the texts are usually white
 
-            texts["mtexts"].append({"text": text, "center": text_center, "height": height, "style": style, "colour": "#000000"})
+            texts["mtexts"].append({"text": text, "center": text_center, "height": height, "style": style, "color": "#000000"})
 
     return texts
 
