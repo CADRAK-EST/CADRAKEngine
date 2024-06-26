@@ -1,4 +1,5 @@
-﻿from sklearn.cluster import DBSCAN
+﻿from shapely import GeometryCollection
+from sklearn.cluster import DBSCAN
 from shapely.strtree import STRtree
 import alphashape
 from shapely.geometry import MultiPoint
@@ -13,11 +14,9 @@ def assign_entities_to_clusters(entity_to_points, points, labels):
     point_tree = KDTree(points)
 
     for entity, entity_points in entity_to_points.items():
-        for ep in entity_points:
-            distance, index = point_tree.query(ep[:2], k=1)
-            cluster_id = labels[index]
-            clusters[cluster_id].append(entity)
-            break  # Each entity is assigned to the cluster of its first point
+        distance, index = point_tree.query(entity_points[0][:2], k=1)
+        cluster_id = labels[index]
+        clusters[cluster_id].append(entity)
 
     return clusters
 
@@ -69,17 +68,20 @@ def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
     tree = STRtree(shapes)
 
     for idx1, alpha_shape1 in list(alpha_shapes.items()):
+        #print("idx1", idx1)
         if idx1 in merged:
             continue
 
         merged_current = False
-        for idx2 in tree.query(alpha_shape1):
+        for idx2 in tree.query(alpha_shape1):  # tree.query(alpha_shape1, predicate=lambda x: x != alpha_shape1): # tree.query(alpha_shape1):
+            #print("distance between", alpha_shape1.distance(alpha_shapes[idx2]))
             if idx1 == idx2 or idx2 in merged:
                 continue
 
             alpha_shape2 = alpha_shapes[idx2]
-
-            if alpha_shape1.intersects(alpha_shape2):
+            #print(alpha_shape1, alpha_shape2)
+            #print("distance", alpha_shape1.distance(alpha_shape2))
+            if alpha_shape1.distance(alpha_shape2) < 5:
                 # Merge clusters
                 #print(clusters[idx1])
                 #print(clusters[idx2])
@@ -131,18 +133,21 @@ def entities_to_points(cluster):
     return points
 
 
-def get_alpha_shape(cluster, alpha=0.1):
+def get_alpha_shape(cluster, alpha):
     points = entities_to_points(cluster)
-    """
-    try:
-        return alphashape.alphashape(points, alpha)
-    except Exception:
-        return MultiPoint(points).convex_hull
-    """
-    return MultiPoint(points).convex_hull
     points_array = np.array(points)
+
     if np.all(points_array[:, 0] == points_array[0, 0]) or np.all(points_array[:, 1] == points_array[0, 1]):
         print("Degenerate point set (all x or all y coordinates are the same), using convex hull.")
         return MultiPoint(points).convex_hull
 
-    return alphashape.alphashape(points, alpha)
+    shape = alphashape.alphashape(points, alpha)
+    if shape.is_empty or isinstance(shape, GeometryCollection) and GeometryCollection.is_empty:
+        print("Generated an empty alpha shape, using convex hull.")
+        return MultiPoint(points).convex_hull
+
+    if not shape.is_valid:
+        print("Generated an invalid alpha shape, using convex hull.")
+        return MultiPoint(points).convex_hull
+
+    return shape

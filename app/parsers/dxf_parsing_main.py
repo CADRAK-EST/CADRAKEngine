@@ -35,7 +35,7 @@ def read_dxf(file_path):
     if border_entities:
         border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
-    final_clusters = iterative_merge(cluster_list, 5)
+    final_clusters = iterative_merge(cluster_list, 0)
 
     views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
@@ -78,7 +78,7 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
         save_time = time.time() - save_time
 
     if log_times:
-        logger.info(f"Time taken for parsing: {parse_time:.2f}s")
+        logger.info(f"Time taken for parsing and clustering: {parse_time:.2f}s")
         if visualize:
             logger.info(f"Time taken for visualization: {visualize_time:.2f}s")
         if analyze:
@@ -106,7 +106,7 @@ def save_json(page):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
+    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_3.dxf")
 
     profile = False
 
