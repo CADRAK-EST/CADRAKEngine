@@ -142,7 +142,7 @@ def extract_and_transform_points_from_entity(entity, matrix=np.identity(3)):
         points = [np.array(transform_point_to_list(entity.dxf.start.x, entity.dxf.start.y, matrix)),
                   np.array(transform_point_to_list(entity.dxf.end.x, entity.dxf.end.y, matrix))]
     elif entity.dxftype() == 'CIRCLE':
-        center = np.array(transform_point_to_list(entity.dxf.center.x, entity.dxf.center.y, matrix))
+        center = np.array(transform_point_to_list(entity.dxf.center.x if entity.dxf.center.x > 0 else -entity.dxf.center.x, entity.dxf.center.y, matrix))
         radius = transform_height(entity.dxf.radius, matrix)
         angles = np.linspace(0, 2 * np.pi, num_segments, endpoint=False)
         points = [center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles]
@@ -200,7 +200,7 @@ def extract_points_from_entity(entity):
         points = [np.array([entity.dxf.start.x, entity.dxf.start.y]),
                   np.array([entity.dxf.end.x, entity.dxf.end.y])]
     elif entity.dxftype() == 'CIRCLE':
-        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
+        center = np.array([entity.dxf.center.x if entity.dxf.center.x > 0 else -entity.dxf.center.x, entity.dxf.center.y])
         radius = entity.dxf.radius
         angles = np.linspace(0, 2 * np.pi, num_segments, endpoint=False)
         points = [center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles]
@@ -272,7 +272,7 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
                 {"start": start, "end": end, "colour": entity_color, "weight": line_weight,
                  "style": line_style, "layer": layer})
         elif entity.dxftype() == 'CIRCLE':
-            center = format_point2(transform_point_to_tuple(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
+            center = format_point2(transform_point_to_tuple(entity.dxf.center.x if entity.dxf.center.x > 0 else -entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             contours["circles"].append(
                 {"centre": center, "radius": transform_height(entity.dxf.radius, transform_matrix), "colour": entity_color, "weight": line_weight,
                  "style": line_style, "layer": layer})

@@ -52,7 +52,7 @@ def plot_entities(views, info_boxes):
             radius = arc["radius"]
             start_angle = np.deg2rad(arc["start_angle"])
             end_angle = np.deg2rad(arc["end_angle"])
-            arc_patch = mpatches.Arc((center["x"], center["y"]), radius, radius, theta1=np.rad2deg(start_angle),
+            arc_patch = mpatches.Arc((center["x"], center["y"]), 2*radius, 2*radius, theta1=np.rad2deg(start_angle),
                                      theta2=np.rad2deg(end_angle), edgecolor=hex_to_mpl_color(arc["colour"]),
                                      linewidth=arc["weight"], linestyle=map_linetype(arc["style"]), fill=False)
             ax.add_patch(arc_patch)
