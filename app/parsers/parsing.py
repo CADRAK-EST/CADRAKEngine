@@ -10,8 +10,13 @@ from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweig
 # Global cache for storing extracted points
 extracted_points_cache = {}
 
+def get_font_for_style(style_name, text_styles):
+    if style_name in text_styles:
+        return text_styles[style_name]
+    return None
 
-def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
+
+def process_entities(doc_blocks, entities, text_styles, parent_transform=np.identity(3)):
     points = []
     entity_to_points = defaultdict(list)
     transform_matrices = {}
@@ -46,11 +51,13 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
             elif entity.dxftype() == 'TEXT':
                 text_center = transform_point_to_tuple(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
                 text_height = transform_height(entity.dxf.height, transform_matrix)
+                font = get_font_for_style(entity.dxf.style, text_styles)
                 text_data = {
                     "text": entity.dxf.text,
                     "center": text_center,
                     "height": text_height,
                     "style": entity.dxf.style,
+                    "font": font,
                     "color": "#000000"
                 }
                 block_texts['texts'].append(text_data)
@@ -59,25 +66,28 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 text_height = transform_height(entity.dxf.char_height, transform_matrix)
                 text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
                 text_direction = list(entity.dxf.text_direction)
-                text_style = entity.dxf.style
+                font = get_font_for_style(entity.dxf.style, text_styles)
                 text_data = {
                     "text": text,
                     "center": text_center,
                     "text_direction": text_direction,
                     "attachment_point": entity.dxf.attachment_point,
                     "height": text_height,
-                    "style": text_style,
+                    "style": entity.dxf.style,
+                    "font": font,
                     "color": "#000000"
                 }
                 block_texts['mtexts'].append(text_data)
             elif entity.dxftype() == "ATTDEF":
                 text_center = transform_point_to_tuple(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
                 text_height = transform_height(entity.dxf.height, transform_matrix)
+                font = get_font_for_style(entity.dxf.style, text_styles)
                 text_data = {
                     "text": entity.dxf.text,
                     "center": text_center,
                     "height": text_height,
                     "style": entity.dxf.style,
+                    "font": font,
                     "color": "#000000",
                 }
                 block_texts['attdefs'].append(text_data)
@@ -241,7 +251,7 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
     return contours
 
 
-def classify_text_entities(all_entities, metadata, layer_properties, header_defaults):
+def classify_text_entities(all_entities, text_styles, metadata, layer_properties, header_defaults):
     texts = {'texts': [], 'mtexts': [], 'attdefs': []}
     for entity in all_entities:
         if entity.dxftype() == 'ACIDBLOCKREFERENCE':
@@ -253,11 +263,13 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
         if entity.dxftype() == 'TEXT':
             text_center = transform_point_to_tuple(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
             text_height = transform_height(entity.dxf.height, np.identity(3))
+            font = get_font_for_style(entity.dxf.style, text_styles)
             text_data = {
                 "text": entity.dxf.text,
                 "center": text_center,
                 "height": text_height,
                 "style": entity.dxf.style,
+                "font": font,
                 "color": "#000000"
             }
 
@@ -267,6 +279,7 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
             text_center = transform_point_to_tuple(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
             text_height = transform_height(entity.dxf.char_height, np.identity(3))
             text_direction = list(entity.dxf.text_direction)
+            font = get_font_for_style(entity.dxf.style, text_styles)
             text_data = {
                 "text": text,
                 "center": text_center,
@@ -274,6 +287,7 @@ def classify_text_entities(all_entities, metadata, layer_properties, header_defa
                 "text_direction": text_direction,
                 "height": text_height,
                 "style": entity.dxf.style,
+                "font": font,
                 "color": "#000000"
             }
             texts["mtexts"].append(text_data)

@@ -13,13 +13,20 @@ from app.parsers.dimension_analysis import find_lengths
 
 logger = logging.getLogger(__name__)
 
+def get_text_styles(doc):
+    text_styles = {}
+    for style in doc.styles:
+        text_styles[style.dxf.name] = style.dxf.font
+    return text_styles
 
 def read_dxf(file_path):
     doc = ezdxf.readfile(file_path)
     doc_blocks = doc.blocks
     metadata, layer_properties, header_defaults, all_entities = get_doc_data(doc)
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities)
+    text_styles = get_text_styles(doc)
+
+    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities, text_styles)
 
     flat_points, labels = form_initial_clusters(entity_to_points)
 
@@ -40,7 +47,7 @@ def read_dxf(file_path):
     views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
 
-    text_entities = classify_text_entities(all_entities, metadata, layer_properties, header_defaults)
+    text_entities = classify_text_entities(all_entities, text_styles, metadata, layer_properties, header_defaults)
 
     # Merge texts from both process_entities and classify_text_entities
     texts['texts'].extend(text_entities['texts'])
