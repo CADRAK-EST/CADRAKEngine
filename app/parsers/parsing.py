@@ -274,12 +274,12 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
         elif entity.dxftype() == 'CIRCLE':
             center = format_point2(transform_point_to_tuple(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             contours["circles"].append(
-                {"centre": center, "radius": entity.dxf.radius, "colour": entity_color, "weight": line_weight,
+                {"centre": center, "radius": transform_height(entity.dxf.radius*2, transform_matrix), "colour": entity_color, "weight": line_weight,
                  "style": line_style, "layer": layer})
         elif entity.dxftype() == 'ARC':
             center = format_point2(transform_point_to_tuple(entity.dxf.center.x, entity.dxf.center.y, transform_matrix))
             contours["arcs"].append(
-                {"centre": center, "radius": entity.dxf.radius, "start_angle": entity.dxf.start_angle,
+                {"centre": center, "radius": transform_height(entity.dxf.radius*2, transform_matrix), "start_angle": entity.dxf.start_angle,
                  "end_angle": entity.dxf.end_angle, "colour": entity_color, "weight": line_weight, "style": line_style,
                  "layer": layer})
         elif entity.dxftype() == 'LWPOLYLINE':

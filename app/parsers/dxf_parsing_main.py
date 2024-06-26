@@ -13,11 +13,13 @@ from app.parsers.dimension_analysis import find_lengths
 
 logger = logging.getLogger(__name__)
 
+
 def get_text_styles(doc):
     text_styles = {}
     for style in doc.styles:
         text_styles[style.dxf.name] = style.dxf.font
     return text_styles
+
 
 def read_dxf(file_path):
     doc = ezdxf.readfile(file_path)
@@ -113,7 +115,7 @@ def save_json(page):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
+    file_path = os.path.join(os.getcwd(), "../../test_data", "Kaur2_only2D.dxf")
 
     profile = False
 
