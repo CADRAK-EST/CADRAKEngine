@@ -68,3 +68,6 @@ def get_entity_linetype(entity, layer_properties, header_defaults):
 def get_entity_layer(entity, layer_properties, header_defaults):
     return entity.dxf.get("layer", "unknown")
 
+
+def get_entity_extrusion(entity):
+    return entity.dxf.get("extrusion", (0, 0, 1))
