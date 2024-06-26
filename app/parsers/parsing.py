@@ -58,13 +58,14 @@ def process_entities(doc_blocks, entities, parent_transform=np.identity(3)):
                 text_height = transform_height(entity.dxf.char_height, transform_matrix)
                 text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
                 text_direction = list(entity.dxf.text_direction)
+                text_style = entity.dxf.style
                 text_data = {
                     "text": text,
                     "center": text_center,
                     "text_direction": text_direction,
                     "attachment_point": entity.dxf.attachment_point,
                     "height": text_height,
-                    "style": entity.dxf.style,
+                    "style": text_style,
                     "color": "#000000"
                 }
                 block_texts['mtexts'].append(text_data)
@@ -236,7 +237,7 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
     return contours
 
 
-def classify_text_entities(all_entities, transform_matrices, metadata, layer_properties, header_defaults):
+def classify_text_entities(all_entities, metadata, layer_properties, header_defaults):
     texts = {'texts': [], 'mtexts': [], 'attdefs': []}
     for entity in all_entities:
         if entity.dxftype() == 'ACIDBLOCKREFERENCE':
