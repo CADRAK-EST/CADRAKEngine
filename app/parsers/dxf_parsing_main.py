@@ -5,8 +5,8 @@ import logging
 import cProfile
 import pstats
 import time
-from app.parsers.parsing import (process_entities, classify_entities, classify_text_entities, get_doc_data,
-                                 process_border_block)
+from app.parsers.parsing import process_entities, classify_entities, classify_text_entities, process_border_block
+from app.parsers.parsing_utilities import get_doc_data
 from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters
 from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
@@ -113,7 +113,7 @@ def save_json(page):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_3.dxf")
+    file_path = os.path.join(os.getcwd(), "../../test_data", "12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_1.dxf")
 
     profile = False
 

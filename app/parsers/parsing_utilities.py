@@ -71,3 +71,35 @@ def get_entity_layer(entity, layer_properties, header_defaults):
 
 def get_entity_extrusion(entity):
     return entity.dxf.get("extrusion", (0, 0, 1))
+
+
+def get_doc_data(doc):
+
+    metadata = {
+        "filename": doc.header.get("$PROJECTNAME", "Unknown"),
+        "units": doc.header.get('$INSUNITS', 0),
+        "software_version": doc.header.get('$ACADVER', 'Unknown'),
+        "background_color": "0xFFFFFF",
+        "bounding_box": doc.header.get('$EXTMIN', None)[:2] + doc.header.get('$EXTMAX', None)[:2]
+    }
+
+    # Build layer properties dictionary
+    layer_properties = {}
+    for layer in doc.layers:
+        layer_properties[layer.dxf.name] = {
+            "color": layer.dxf.get('color', 256),
+            "lineweight": layer.dxf.get('lineweight', -1),
+            "linetype": layer.dxf.get('linetype', 'BYLAYER'),
+            "name": layer.dxf.get('name', 'noname')
+        }
+
+    # Read the default values from the DXF header
+    header_defaults = {
+        "color": doc.header.get('$CECOLOR', 256),  # Default color
+        "lineweight": doc.header.get('$CELWEIGHT', -1),  # Default lineweight
+        "linetype": doc.header.get('$CELTYPE', 'BYLAYER')  # Default line type
+    }
+
+    all_entities = list(doc.modelspace())
+
+    return metadata, layer_properties, header_defaults, all_entities

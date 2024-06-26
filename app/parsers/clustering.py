@@ -138,7 +138,7 @@ def get_alpha_shape(cluster, alpha):
     points_array = np.array(points)
 
     if np.all(points_array[:, 0] == points_array[0, 0]) or np.all(points_array[:, 1] == points_array[0, 1]):
-        print("Degenerate point set (all x or all y coordinates are the same), using convex hull.")
+        # print("Degenerate point set (all x or all y coordinates are the same), using convex hull.")
         return MultiPoint(points).convex_hull
 
     shape = alphashape.alphashape(points, alpha)

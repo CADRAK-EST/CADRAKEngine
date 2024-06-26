@@ -2,8 +2,8 @@
 import numpy as np
 import re
 from collections import defaultdict
-from app.parsers.utilities import (format_point2, transform_point_to_tuple, transform_point_to_list, transform_height,
-                                   transform_points)
+from app.parsers.utilities import (format_point2, transform_point_to_tuple, transform_point_to_list, normalize_vector,
+                                   compute_rotation_matrix, transform_height)
 from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweight, get_entity_linetype,
                                            get_entity_layer, get_insert_transform)
 
@@ -92,7 +92,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
                 }
                 block_texts['attdefs'].append(text_data)
             else:
-                entity_points = extract_points_from_entity(entity, transform_matrix)
+                entity_points = extract_and_transform_points_from_entity(entity, transform_matrix)
                 extracted_points_cache[entity] = entity_points
                 if entity_points:
                     block_entity_to_points[entity].extend(entity_points)
@@ -119,7 +119,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
         elif entity.dxftype() == 'DIMENSION':
             dimensions.append(entity)
         else:
-            entity_points = extract_points_from_entity(entity, parent_transform)
+            entity_points = extract_and_transform_points_from_entity(entity, parent_transform)
             extracted_points_cache[entity] = entity_points
             if entity_points:
                 entity_to_points[entity].extend(entity_points)
@@ -129,10 +129,15 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
     return points, entity_to_points, transform_matrices, border_entities, dimensions, texts
 
 
-def extract_points_from_entity(entity, matrix=np.identity(3)):
+def extract_and_transform_points_from_entity(entity, matrix=np.identity(3)):
     num_segments = 72
     points = []
-
+    if entity.dxf.hasattr("extrusion") and entity.dxf.extrusion != (0, 0, 1):
+        # normalized_extrusion = normalize_vector(entity.dxf.extrusion)
+        # rotational_matrix = compute_rotation_matrix((0, 0, 1), normalized_extrusion)
+        # Combine the rotational matrix with the provided transformation matrix
+        # matrix = np.dot(matrix, rotational_matrix)
+        print("Extrusion not supported")
     if entity.dxftype() == 'LINE':
         points = [np.array(transform_point_to_list(entity.dxf.start.x, entity.dxf.start.y, matrix)),
                   np.array(transform_point_to_list(entity.dxf.end.x, entity.dxf.end.y, matrix))]
@@ -180,6 +185,64 @@ def extract_points_from_entity(entity, matrix=np.identity(3)):
                     elif edge.EDGE_TYPE == 'ArcEdge':
                         center = np.array(transform_point_to_list(edge.center.x, edge.center.y, matrix))
                         radius = transform_height(edge.radius, matrix) #edge.radius
+                        start_angle = np.radians(edge.start_angle)
+                        end_angle = np.radians(edge.end_angle)
+                        angles = np.linspace(start_angle, end_angle, num_segments, endpoint=True)
+                        points.extend([center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles])
+
+    return points
+
+
+def extract_points_from_entity(entity):
+    num_segments = 72
+    points = []
+    if entity.dxftype() == 'LINE':
+        points = [np.array([entity.dxf.start.x, entity.dxf.start.y]),
+                  np.array([entity.dxf.end.x, entity.dxf.end.y])]
+    elif entity.dxftype() == 'CIRCLE':
+        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
+        radius = entity.dxf.radius
+        angles = np.linspace(0, 2 * np.pi, num_segments, endpoint=False)
+        points = [center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles]
+    elif entity.dxftype() == 'ARC':
+        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
+        radius = entity.dxf.radius
+        start_angle = np.radians(entity.dxf.start_angle)
+        end_angle = np.radians(entity.dxf.end_angle)
+        angles = np.linspace(start_angle, end_angle, num_segments, endpoint=True)
+        points = [center + radius * np.array([np.cos(a), np.sin(a)]) for a in angles]
+    elif entity.dxftype() == 'ELLIPSE':
+        center = np.array([entity.dxf.center.x, entity.dxf.center.y])
+        major_axis = np.array([entity.dxf.major_axis.x, entity.dxf.major_axis.y])
+        major_axis_length = np.linalg.norm(major_axis)
+        minor_axis_length = major_axis_length * entity.dxf.ratio
+        rotation_angle = np.arctan2(major_axis[1], major_axis[0])
+        angles = np.linspace(0, 2 * np.pi, num_segments, endpoint=False)
+        points = [center + np.array([major_axis_length * np.cos(a) * np.cos(rotation_angle) - minor_axis_length * np.sin(a) * np.sin(rotation_angle),
+                                     major_axis_length * np.cos(a) * np.sin(rotation_angle) + minor_axis_length * np.sin(a) * np.cos(rotation_angle)]) for a in angles]
+    elif entity.dxftype() == 'SPLINE':
+        points = [np.array([point.x, point.y]) for point in entity.fit_points]
+    elif entity.dxftype() == 'LWPOLYLINE':
+        points = [np.array([vertex.x, vertex.y]) for vertex in entity]
+    elif entity.dxftype() == 'POLYLINE':
+        points = [np.array([vertex.dxf.location.x, vertex.dxf.location.y]) for vertex in entity.vertices]
+    elif entity.dxftype() == 'SOLID':
+        points = [np.array([entity.dxf.vtx0.x, entity.dxf.vtx0.y]),
+                  np.array([entity.dxf.vtx1.x, entity.dxf.vtx1.y]),
+                  np.array([entity.dxf.vtx2.x, entity.dxf.vtx2.y]),
+                  np.array([entity.dxf.vtx3.x, entity.dxf.vtx3.y])]
+    elif entity.dxftype() == 'HATCH':
+        for path in entity.paths:
+            if isinstance(path, ezdxf.entities.PolylinePath):
+                points.extend([np.array([v.x, v.y]) for v in path.vertices])
+            elif isinstance(path, ezdxf.entities.EdgePath):
+                for edge in path.edges:
+                    if edge.EDGE_TYPE == 'LineEdge':
+                        points.extend([np.array([edge.start.x, edge.start.y]),
+                                       np.array([edge.end.x, edge.end.y])])
+                    elif edge.EDGE_TYPE == 'ArcEdge':
+                        center = np.array([edge.center.x, edge.center.y])
+                        radius = edge.radius #edge.radius
                         start_angle = np.radians(edge.start_angle)
                         end_angle = np.radians(edge.end_angle)
                         angles = np.linspace(start_angle, end_angle, num_segments, endpoint=True)
@@ -292,38 +355,6 @@ def classify_text_entities(all_entities, text_styles, metadata, layer_properties
             }
             texts["mtexts"].append(text_data)
     return texts
-
-
-def get_doc_data(doc):
-
-    metadata = {
-        "filename": doc.header.get("$PROJECTNAME", "Unknown"),
-        "units": doc.header.get('$INSUNITS', 0),
-        "software_version": doc.header.get('$ACADVER', 'Unknown'),
-        "background_color": "0xFFFFFF",
-        "bounding_box": doc.header.get('$EXTMIN', None)[:2] + doc.header.get('$EXTMAX', None)[:2]
-    }
-
-    # Build layer properties dictionary
-    layer_properties = {}
-    for layer in doc.layers:
-        layer_properties[layer.dxf.name] = {
-            "color": layer.dxf.get('color', 256),
-            "lineweight": layer.dxf.get('lineweight', -1),
-            "linetype": layer.dxf.get('linetype', 'BYLAYER'),
-            "name": layer.dxf.get('name', 'noname')
-        }
-
-    # Read the default values from the DXF header
-    header_defaults = {
-        "color": doc.header.get('$CECOLOR', 256),  # Default color
-        "lineweight": doc.header.get('$CELWEIGHT', -1),  # Default lineweight
-        "linetype": doc.header.get('$CELTYPE', 'BYLAYER')  # Default line type
-    }
-
-    all_entities = list(doc.modelspace())
-
-    return metadata, layer_properties, header_defaults, all_entities
 
 
 def process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults):
