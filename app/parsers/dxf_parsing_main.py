@@ -28,25 +28,30 @@ def read_dxf(file_path):
 
     text_styles = get_text_styles(doc)
 
-    points, entity_to_points, transform_matrices, border_entities, dimensions, texts = process_entities(doc.blocks, all_entities, text_styles)
+    points, entity_to_points, transform_matrices, border_inserts, dimensions, texts = process_entities(doc.blocks, all_entities, text_styles)
+
+    for dimension in dimensions:
+        pass
 
     flat_points, labels = form_initial_clusters(entity_to_points)
 
     # Exclude border entities from clustering
     clusters = assign_entities_to_clusters(
-        {k: v for k, v in entity_to_points.items() if k not in [be[0] for be in border_entities]}, flat_points, labels)
+        {k: v for k, v in entity_to_points.items() if k not in [be[0] for be in border_inserts]}, flat_points, labels)
 
     # Convert clusters dictionary to list of lists
     cluster_list = list(clusters.values())
 
     # Process border entities
     border_view = None
-    if border_entities:
-        border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
+    if len(border_inserts) > 0:
+        border_view = process_border_block(border_inserts, doc_blocks, metadata, layer_properties, header_defaults)
+        pass
 
     final_clusters = iterative_merge(cluster_list, 0)
 
-    views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
+    views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points, metadata,
+                                            layer_properties, header_defaults),
               "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
 
     text_entities = classify_text_entities(all_entities, text_styles, metadata, layer_properties, header_defaults)
@@ -99,11 +104,12 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
 
 def mistake_analysis(views, dimensions):
     for view in views:
-        ids_of_mistaken_lines, ids_of_potential_mistaken_lines = find_lengths(dimensions, view["contours"]["lines"],
-                                                                              view["contours"]["circles"])
+        ids_of_mistaken_lines, ids_of_potential_mistaken_lines, ids_of_mistaken_circles =\
+            find_lengths(dimensions, view["contours"]["lines"], view["contours"]["circles"])
         view["mistakes"] = {"potential": {}, "certain": {}}
         view["mistakes"]["certain"]["lines"] = ids_of_mistaken_lines
         view["mistakes"]["potential"]["lines"] = ids_of_potential_mistaken_lines
+        view["mistakes"]["certain"]["circles"] = ids_of_mistaken_circles
         logger.info(f"{view['block_name']} has {len(ids_of_mistaken_lines)} mistakes and "
                     f"{len(ids_of_potential_mistaken_lines)} potential mistakes.")
     return views
@@ -115,7 +121,8 @@ def save_json(page):
 
 
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "Kaur2_only2D.dxf")
+    file_path = os.path.join(os.getcwd(), "../../test_data",
+                             "12-02-0 Tiisel CNC SynDat 3/12-02-0 Tiisel CNC SynDat 3_Sheet_4.dxf")
 
     profile = False
 
