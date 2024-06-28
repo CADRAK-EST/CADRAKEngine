@@ -50,11 +50,23 @@ def process_dimensions_to_graphs(dimensions, scale=1e3):
                     g_xy.add_edge(dimension_dict["middle"], dimension_dict["end"], weight=dimension_dict["length"]/2)
                     dimension_dict["geometry"] = "diagonal"
                 else:
-                    logger.warning("Dimension %s is not vertical, horizontal or diagonal", dimension_dict)
-                    dimension_dict["geometry"] = "unknown"
+                    checkpoint = dim.dxf.get('defpoint', None)
+                    checkpoint = format_point((checkpoint.x, checkpoint.y), scale)
+                    # print("Checkpoint:", checkpoint)
+                    if checkpoint[0] == dimension_dict["start"][0] or checkpoint[0] == dimension_dict["end"][0]:
+                        dimension_dict["geometry"] = "horizontal"
+                        g_x.add_edge(dimension_dict["start"][0], dimension_dict["middle"][0], weight=dimension_dict["length"]/2)
+                        g_x.add_edge(dimension_dict["middle"][0], dimension_dict["end"][0], weight=dimension_dict["length"]/2)
+                    elif checkpoint[1] == dimension_dict["start"][1] or checkpoint[1] == dimension_dict["end"][1]:
+                        dimension_dict["geometry"] = "vertical"
+                        g_y.add_edge(dimension_dict["start"][1], dimension_dict["middle"][1], weight=dimension_dict["length"]/2)
+                        g_y.add_edge(dimension_dict["middle"][1], dimension_dict["end"][1], weight=dimension_dict["length"]/2)
+                    else:
+                        #logger.error("Dimension %s is not vertical, horizontal or diagonal", dimension_dict)
+                        dimension_dict["geometry"] = "unknown"
 
         dimension_list.append(dimension_dict)
-        print(dimension_list[-1])
+        # print(dimension_list[-1])
 
     return {"g_x": g_x, "g_y": g_y, "g_xy": g_xy, "circles_info": circles_info}
 
