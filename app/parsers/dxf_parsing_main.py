@@ -7,7 +7,7 @@ import pstats
 import time
 from app.parsers.parsing import process_entities, classify_entities, classify_text_entities, process_border_block
 from app.parsers.parsing_utilities import get_doc_data
-from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters
+from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters, find_closest_view
 from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
 
@@ -19,6 +19,15 @@ def get_text_styles(doc):
     for style in doc.styles:
         text_styles[style.dxf.name] = style.dxf.font
     return text_styles
+
+def assign_views_to_texts(texts, alpha_shapes):
+    for text_type in ['texts', 'mtexts', 'attdefs']:
+        for text in texts[text_type]:
+            text_center = text['center']
+            closest_view = find_closest_view(text_center, alpha_shapes)
+            print("Closest view", closest_view)
+            text['view'] = closest_view
+    return texts
 
 
 def read_dxf(file_path):
@@ -38,16 +47,16 @@ def read_dxf(file_path):
 
     # Convert clusters dictionary to list of lists
     cluster_list = list(clusters.values())
+    print("cluster_list: ")
+    print(cluster_list)
 
     # Process border entities
     border_view = None
     if border_entities:
         border_view = process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults)
 
-    final_clusters = iterative_merge(cluster_list, 0)
+    final_clusters, alpha_shapes = iterative_merge(cluster_list, 0)
 
-    views = [{"contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
-              "block_name": f"View {idx + 1}"} for idx, cluster in enumerate(final_clusters)]
 
     text_entities = classify_text_entities(all_entities, text_styles, metadata, layer_properties, header_defaults)
 
@@ -56,9 +65,24 @@ def read_dxf(file_path):
     texts['mtexts'].extend(text_entities['mtexts'])
     texts['attdefs'].extend(text_entities['attdefs'])
 
+    # Assign views to texts
+    texts_with_views = assign_views_to_texts(texts, alpha_shapes)
+
+    # Debug: Print texts_with_views to check its structure
+    print("texts_with_views:", texts_with_views)
+
+    views = [
+        {
+            "contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
+            "block_name": f"View {idx + 1}",
+            "texts": [
+                text for text_type in texts_with_views for text in texts_with_views[text_type] if text.get("view") == idx
+            ]
+        } 
+        for idx, cluster in enumerate(final_clusters)]
+
     if border_view:
        views.append(border_view)
-
     return views, dimensions, metadata, texts
 
 
@@ -74,7 +98,7 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
         indicate_mistakes(views)
         analyze_time = time.time() - analyze_time
 
-    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": [], "texts": all_texts}
+    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": []}
 
     if visualize:
         visualize_time = time.time()
@@ -95,7 +119,6 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
         if save:
             logger.info(f"Time taken for saving: {save_time:.2f}s")
     return page
-
 
 def mistake_analysis(views, dimensions):
     for view in views:

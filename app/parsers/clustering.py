@@ -1,4 +1,4 @@
-﻿from shapely import GeometryCollection
+﻿from shapely import GeometryCollection, Point, Polygon
 from sklearn.cluster import DBSCAN
 from shapely.strtree import STRtree
 import alphashape
@@ -113,6 +113,8 @@ def merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes):
 def iterative_merge(clusters, alpha):
     iterations = 0
     alpha_shapes = {idx: get_alpha_shape(cluster, alpha) for idx, cluster in enumerate(clusters)}
+    print("The alpha shapes")
+    print(alpha_shapes)
 
     while True:
         num_clusters_before = len(clusters)
@@ -123,7 +125,7 @@ def iterative_merge(clusters, alpha):
             break
         iterations += 1
 
-    return clusters
+    return clusters, alpha_shapes
 
 
 def entities_to_points(cluster):
@@ -151,3 +153,16 @@ def get_alpha_shape(cluster, alpha):
         return MultiPoint(points).convex_hull
 
     return shape
+
+
+def find_closest_view(text_center, alpha_shapes):
+    min_distance = float('inf')
+    closest_view = None
+    point = Point(text_center)
+    for view, alpha_shape_coords in alpha_shapes.items():
+        alpha_shape = Polygon(alpha_shape_coords)
+        dist = point.distance(alpha_shape)
+        if dist < min_distance:
+            min_distance = dist
+            closest_view = view
+    return closest_view
