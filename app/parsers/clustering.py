@@ -118,7 +118,7 @@ def iterative_merge(clusters, alpha):
 
     while True:
         num_clusters_before = len(clusters)
-        print(f"Iteration {iterations}: {num_clusters_before} clusters before merge.")
+        # print(f"Iteration {iterations}: {num_clusters_before} clusters before merge.")
         clusters, alpha_shapes = merge_clusters_with_alpha_shape(clusters, alpha, alpha_shapes)
 
         if num_clusters_before == len(clusters):

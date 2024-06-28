@@ -91,7 +91,7 @@ def read_dxf(file_path):
     return views, dimensions, metadata, texts
 
 
-def initialize(file_path, visualize=False, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=True):
+def initialize(file_path, matplotlib=False, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=True):
     parse_time = time.time()
     views, dimensions, metadata, all_texts = read_dxf(file_path)
     info_boxes = []
@@ -111,7 +111,7 @@ def initialize(file_path, visualize=False, save=False, analyze_dimensions=True, 
 
     page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": []}
 
-    if visualize:
+    if matplotlib:
         visualize_time = time.time()
         plot_entities(views, info_boxes)
         visualize_time = time.time() - visualize_time
@@ -123,7 +123,7 @@ def initialize(file_path, visualize=False, save=False, analyze_dimensions=True, 
 
     if log_times:
         logger.info(f"Time taken for parsing and clustering: {parse_time:.2f}s")
-        if visualize:
+        if matplotlib:
             logger.info(f"Time taken for visualization: {visualize_time:.2f}s")
         if analyze_dimensions:
             logger.info(f"Time taken for analysis: {analyze_dimensions_time:.4f}s")
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         pr = cProfile.Profile()
         pr.enable()
 
-        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)
+        initialize(file_path, matplotlib=True, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=True)
 
         pr.disable()
 
@@ -175,4 +175,4 @@ if __name__ == "__main__":
         # ps = pstats.Stats(pr)
         # ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
     else:
-        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)
+        initialize(file_path, matplotlib=True, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=False)
