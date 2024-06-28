@@ -27,9 +27,13 @@ def predict_class(text):
     with torch.no_grad():
         outputs = model(**inputs)
     logits = outputs.logits
+    probabilities = F.softmax(logits, dim=1)
     predicted_class_id = torch.argmax(logits, dim=1).item()
     predicted_class = id_to_label[predicted_class_id]
-    return predicted_class
+    confidence = probabilities[0, predicted_class_id].item() * 100  # Convert to percentage
+
+    logger.info(f"Text: '{text}' | Predicted class: '{predicted_class}' | Confidence: {confidence:.2f}%")
+    return predicted_class, confidence
 
 
 def analyze_texts(all_texts):
