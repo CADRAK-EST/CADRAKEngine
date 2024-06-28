@@ -7,10 +7,21 @@ import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
-# Load the trained model and tokenizer
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_DIRECTORY = os.path.join(BASE_DIR, 'trained_models')
-LABEL_MAPPING_PATH = os.path.join(BASE_DIR, 'label_mapping.csv')
+# Get the current working directory
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# Define the relative path to your file
+relative_model_path = "trained_models"
+relative_label_mapping_path = "label_mapping.csv"
+
+# Join the current directory with the relative path to get the absolute path
+MODEL_DIRECTORY = os.path.join(current_dir, relative_model_path)
+LABEL_MAPPING_PATH = os.path.join(current_dir, relative_label_mapping_path)
+
+# Normalize the path (resolve "..", ".", etc.)
+MODEL_DIRECTORY = os.path.normpath(MODEL_DIRECTORY)
+LABEL_MAPPING_PATH = os.path.normpath(LABEL_MAPPING_PATH)
+
 latest_model_dir = max([os.path.join(MODEL_DIRECTORY, d) for d in os.listdir(MODEL_DIRECTORY) if os.path.isdir(os.path.join(MODEL_DIRECTORY, d))], key=os.path.getmtime)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

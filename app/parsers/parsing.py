@@ -10,6 +10,7 @@ from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweig
 # Global cache for storing extracted points
 extracted_points_cache = {}
 
+
 def get_font_for_style(style_name, text_styles):
     if style_name in text_styles:
         return text_styles[style_name]
@@ -20,7 +21,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
     points = []
     entity_to_points = defaultdict(list)
     transform_matrices = {}
-    border_entities = []
+    border_inserts = []
     dimensions = []
 
     texts = {'texts': [], 'mtexts': [], 'attdefs': []}
@@ -36,7 +37,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
                 combined_matrix = np.dot(transform_matrix, insert_matrix)
                 nested_block = doc_blocks.get(entity.dxf.name)
                 if 'border' in entity.dxf.name.lower():
-                    border_entities.append((entity, combined_matrix))
+                    border_inserts.append((entity, combined_matrix))
                     transform_matrices[entity] = combined_matrix
                     continue
 
@@ -105,7 +106,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
             insert_matrix = get_insert_transform(entity)
             block = doc_blocks.get(entity.dxf.name)
             if 'border' in entity.dxf.name.lower():
-                border_entities.append((entity, insert_matrix))
+                border_inserts.append((entity, insert_matrix))
                 transform_matrices[entity] = insert_matrix
                 continue
             block_points, block_entity_to_points, block_transform_matrices, block_texts = process_block(block,
@@ -126,7 +127,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
                 transform_matrices[entity] = parent_transform
                 points.extend(entity_points)
 
-    return points, entity_to_points, transform_matrices, border_entities, dimensions, texts
+    return points, entity_to_points, transform_matrices, border_inserts, dimensions, texts
 
 
 def extract_and_transform_points_from_entity(entity, matrix=np.identity(3)):
@@ -357,12 +358,12 @@ def classify_text_entities(all_entities, text_styles, metadata, layer_properties
     return texts
 
 
-def process_border_block(border_entities, doc_blocks, metadata, layer_properties, header_defaults):
+def process_border_block(border_inserts, doc_blocks, metadata, layer_properties, header_defaults):
     border_contours = {
         "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
         "splines": []
     }
-    for be, matrix in border_entities:
+    for be, matrix in border_inserts:
         block = doc_blocks.get(be.dxf.name)
         _, block_entity_to_points, block_transform_matrices, *_ = process_entities(doc_blocks, list(block), None, matrix)
         for entity in block_entity_to_points:
