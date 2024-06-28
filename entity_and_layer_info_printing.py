@@ -81,7 +81,7 @@ def list_blocks_and_visualize(file_path):
         plt.show()
 
 # Example usage
-file_path = "C:\\Users\\marat\\Documents\\Github\\CADRAK2\\CADRAKEngine\\test_data\\Loik1.dxf"
+file_path = "C:\\Users\\marat\\Documents\\Github\\CADRAK2\\CADRAKEngine\\test_data\\12-04-0 Kiik SynDat 3/12-04-0 Kiik SynDat 3_Sheet_2.dxf"
 list_blocks_and_visualize(file_path)
 """
 
