@@ -10,6 +10,7 @@ from app.parsers.parsing_utilities import get_doc_data
 from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters
 from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
+from app.parsers.text_analysis.text_analysis import analyze_texts
 
 logger = logging.getLogger(__name__)
 
@@ -62,17 +63,23 @@ def read_dxf(file_path):
     return views, dimensions, metadata, texts
 
 
-def initialize(file_path, visualize=False, save=False, analyze=True, log_times=True):
+def initialize(file_path, visualize=False, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=True):
     parse_time = time.time()
     views, dimensions, metadata, all_texts = read_dxf(file_path)
     info_boxes = []
     parse_time = time.time() - parse_time
 
-    if analyze:
-        analyze_time = time.time()
+    if analyze_dimensions:
+        analyze_dimensions_time = time.time()
         views = mistake_analysis(views, dimensions)
         indicate_mistakes(views)
-        analyze_time = time.time() - analyze_time
+        analyze_dimensions_time = time.time() - analyze_dimensions_time
+
+    if do_analyze_texts:
+        analyze_texts_time = time.time()
+        all_texts = analyze_texts(all_texts)
+        analyze_texts_time = time.time() - analyze_texts_time
+
 
     page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": [], "texts": all_texts}
 
@@ -90,8 +97,10 @@ def initialize(file_path, visualize=False, save=False, analyze=True, log_times=T
         logger.info(f"Time taken for parsing and clustering: {parse_time:.2f}s")
         if visualize:
             logger.info(f"Time taken for visualization: {visualize_time:.2f}s")
-        if analyze:
-            logger.info(f"Time taken for analysis: {analyze_time:.2f}s")
+        if analyze_dimensions:
+            logger.info(f"Time taken for analysis: {analyze_dimensions_time:.4f}s")
+        if do_analyze_texts:
+            logger.info(f"Time taken for text analysis: {analyze_texts_time:.4f}s")
         if save:
             logger.info(f"Time taken for saving: {save_time:.2f}s")
     return page
@@ -124,7 +133,7 @@ if __name__ == "__main__":
         pr = cProfile.Profile()
         pr.enable()
 
-        initialize(file_path, visualize=True, save=False, analyze=True, log_times=True)
+        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)
 
         pr.disable()
 
@@ -137,4 +146,4 @@ if __name__ == "__main__":
         # ps = pstats.Stats(pr)
         # ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
     else:
-        initialize(file_path, visualize=True, save=False, analyze=True, log_times=True)
+        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)

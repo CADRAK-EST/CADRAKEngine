@@ -3,8 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Custom
 .idea/
 *.dxf
+logs/
+*.log
+app/parsers/text_analysis/trained_models/
 
 # C extensions
 *.so
