@@ -160,8 +160,9 @@ def find_closest_view(text_center, alpha_shapes):
     closest_view = None
     point = Point(text_center)
     for view, alpha_shape_coords in alpha_shapes.items():
-        alpha_shape = Polygon(alpha_shape_coords)
-        dist = point.distance(alpha_shape)
+        # alpha_shape = Polygon(alpha_shape_coords)
+        # dist = point.distance(alpha_shape)
+        dist = point.distance(alpha_shape_coords)
         if dist < min_distance:
             min_distance = dist
             closest_view = view
