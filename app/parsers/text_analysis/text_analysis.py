@@ -3,12 +3,14 @@ import torch
 import pandas as pd
 from transformers import BertTokenizer, BertForSequenceClassification
 import logging
+import torch.nn.functional as F
 
 logger = logging.getLogger(__name__)
 
 # Load the trained model and tokenizer
-MODEL_DIRECTORY = 'app/parsers/text_analysis/trained_models'
-LABEL_MAPPING_PATH = 'app/parsers/text_analysis/label_mapping.csv'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_DIRECTORY = os.path.join(BASE_DIR, 'trained_models')
+LABEL_MAPPING_PATH = os.path.join(BASE_DIR, 'label_mapping.csv')
 latest_model_dir = max([os.path.join(MODEL_DIRECTORY, d) for d in os.listdir(MODEL_DIRECTORY) if os.path.isdir(os.path.join(MODEL_DIRECTORY, d))], key=os.path.getmtime)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -37,20 +39,18 @@ def predict_class(text):
 
 
 def analyze_texts(all_texts):
-    for text_info in all_texts.get('texts', []):
-        text = text_info['text']
-        predicted_class = predict_class(text)
-        text_info['predicted_class'] = predicted_class
-
-    for text_info in all_texts.get('mtexts', []):
-        text = text_info['text']
-        predicted_class = predict_class(text)
-        text_info['predicted_class'] = predicted_class
-
-    for text_info in all_texts.get('attdefs', []):
-        text = text_info['text']
-        predicted_class = predict_class(text)
-        text_info['predicted_class'] = predicted_class
+    for category in ['texts', 'mtexts', 'attdefs']:
+        for text_info in all_texts.get(category, []):
+            text = text_info['text']
+            predicted_class, confidence = predict_class(text)
+            if confidence > 95:
+                text_info['predicted_class'] = predicted_class
+                text_info['confidence'] = confidence
+                if predicted_class == 'other':
+                    text_info['predicted_class'] = 'Unknown'
+            else:
+                text_info['predicted_class'] = 'Unknown'
+                text_info['confidence'] = confidence
 
     return all_texts
 

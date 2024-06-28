@@ -1,20 +1,27 @@
 label,id
 mass label,0
-page size label,1
-date label,2
-filename label,3
-tolerance value,4
-tolerance label,5
-welding tolerance label,6
-creator label,7
-approver label,8
-controller label,9
-material label,10
-scale label,11
-scale value,12
-page label,13
-quantity label,14
-quantity value,15
-section value,16
-revision label,17
-comment label,18
+mass value,1
+page size label,2
+date label,3
+filename label,4
+tolerance value,5
+tolerance label,6
+welding tolerance label,7
+creator label,8
+approver label,9
+controller label,10
+material label,11
+scale label,12
+scale value,13
+page label,14
+quantity label,15
+quantity value,16
+section value,17
+section label,18
+revision label,19
+comment label,20
+title label,21
+page number label,22
+other,23
+units label,24
+units value,25

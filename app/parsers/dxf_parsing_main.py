@@ -123,8 +123,11 @@ def save_json(page):
         json.dump(page, json_file, indent=4)
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DXF_FILE_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..', 'data', 'LauriKastJaRocket', 'LauriKastJaRocket_Sheet_1.dxf'))
+
 if __name__ == "__main__":
-    file_path = os.path.join(os.getcwd(), "../../test_data", "Kaur2_only2D.dxf")
+    file_path = DXF_FILE_PATH
 
     profile = False
 
@@ -133,7 +136,7 @@ if __name__ == "__main__":
         pr = cProfile.Profile()
         pr.enable()
 
-        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)
+        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=True)
 
         pr.disable()
 
@@ -146,4 +149,6 @@ if __name__ == "__main__":
         # ps = pstats.Stats(pr)
         # ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
     else:
-        initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)
+        page = initialize(file_path, visualize=True, save=False, analyze_dimensions=True, log_times=True)
+        save_json(page)
+
