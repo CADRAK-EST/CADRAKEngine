@@ -68,7 +68,7 @@ def process_entities(doc_blocks, entities, text_styles, parent_transform=np.iden
             elif entity.dxftype() == 'MTEXT':
                 text_center = transform_point_to_tuple(entity.dxf.insert.x, entity.dxf.insert.y, transform_matrix)
                 text_height = transform_height(entity.dxf.char_height, transform_matrix)
-                text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
+                text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}|\\W\d+\.\d+;|\\pxa\d+\.\d+,t\d+;', '', entity.text)
                 text_direction = list(entity.dxf.text_direction)
                 font = get_font_for_style(entity.dxf.style, text_styles)
                 text_data = {
@@ -342,7 +342,7 @@ def classify_text_entities(all_entities, text_styles, metadata, layer_properties
 
             texts["texts"].append(text_data)
         elif entity.dxftype() == 'MTEXT':
-            text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}', '', entity.text)
+            text = re.sub(r'\\f[^;]*;|\\[A-Za-z]+\;|\\H\d+\.\d+;|\\P|{\\H[^}]*;|}|{|}|\\W\d+\.\d+;|\\pxa\d+\.\d+,t\d+;', '', entity.text)
             text_center = transform_point_to_tuple(entity.dxf.insert.x, entity.dxf.insert.y, np.identity(3))
             text_height = transform_height(entity.dxf.char_height, np.identity(3))
             text_direction = list(entity.dxf.text_direction)
