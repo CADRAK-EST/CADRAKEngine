@@ -1,6 +1,7 @@
 from app.parsers.dxf_parsing_main import initialize
 import os
 import zipfile
+import shutil
 import json
 
 def parse_file(file):
@@ -10,6 +11,7 @@ def parse_file(file):
 
     file_path = os.path.join(TEMP_UPLOAD_FOLDER, file.filename)
     file.save(file_path)
+    temp_dir = None
 
     def generate():
         report_card= []
@@ -41,6 +43,11 @@ def parse_file(file):
                         })
                         yield json.dumps(page).encode('utf-8')
                         page_number += 1
+                
         yield json.dumps(report_card).encode('utf-8')
+    
+    os.remove(file_path)
+    if file.filename.endswith('.zip'):
+        shutil.rmtree(temp_dir)
 
     return generate
