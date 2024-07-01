@@ -123,11 +123,18 @@ def initialize(file_path, matplotlib=False, save=False, analyze_dimensions=True,
     info_boxes = []
     parse_time = time.time() - parse_time
 
+    metadata["page_type"] = "assembly"
+    metadata["dimension_mistakes_count"] = 0
+    metadata["other_mistakes_count"] = 0
+
     if analyze_dimensions:
         analyze_dimensions_time = time.time()
         views = mistake_analysis(views, dimensions)
         indicate_mistakes(views)
         analyze_dimensions_time = time.time() - analyze_dimensions_time
+        metadata["dimension_mistakes_count"] = sum(len(view["mistakes"]["certain"]["lines"]) + 
+                                                   len(view["mistakes"]["certain"]["circles"]) + 
+                                                   len(view["mistakes"]["potential"]["lines"]) for view in views)
 
     if do_analyze_texts:
         analyze_texts_time = time.time()
