@@ -62,7 +62,7 @@ def process_dimensions_to_graphs(dimensions, scale=1e3):
                         g_y.add_edge(dimension_dict["start"][1], dimension_dict["middle"][1], weight=dimension_dict["length"]/2)
                         g_y.add_edge(dimension_dict["middle"][1], dimension_dict["end"][1], weight=dimension_dict["length"]/2)
                     else:
-                        #logger.error("Dimension %s is not vertical, horizontal or diagonal", dimension_dict)
+                        # logger.error("Dimension %s is not vertical, horizontal or diagonal", dimension_dict)
                         dimension_dict["geometry"] = "unknown"
 
         dimension_list.append(dimension_dict)

@@ -256,7 +256,7 @@ def get_entity_points_from_cache(entity):
     return extracted_points_cache[entity]
 
 
-def classify_entities(cluster, transform_matrices, entity_to_points, metadata, layer_properties, header_defaults):
+def classify_contour_entities(cluster, transform_matrices, entity_to_points, metadata, layer_properties, header_defaults):
     contours = {"lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [],
                 "ellipses": [], "splines": []}
     for entity in cluster:
@@ -318,7 +318,7 @@ def classify_entities(cluster, transform_matrices, entity_to_points, metadata, l
 def classify_text_entities(all_entities, text_styles, metadata, layer_properties, header_defaults):
     texts = {'texts': [], 'mtexts': [], 'attdefs': []}
     for entity in all_entities:
-        if entity.dxftype() == 'ACIDBLOCKREFERENCE':
+        if entity.dxftype() != 'TEXT' and entity.dxftype() != 'MTEXT':
             continue
         entity_color = get_entity_color(entity, layer_properties, header_defaults, metadata["background_color"])
         line_weight = get_entity_lineweight(entity, layer_properties, header_defaults)
@@ -363,14 +363,21 @@ def process_border_block(border_inserts, doc_blocks, metadata, layer_properties,
         "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
         "splines": []
     }
+    all_entities = []
+    all_entity_to_points = {}
+    all_transform_matrices = {}
+
     for be, matrix in border_inserts:
         block = doc_blocks.get(be.dxf.name)
         _, block_entity_to_points, block_transform_matrices, *_ = process_entities(doc_blocks, list(block), None, matrix)
-        for entity in block_entity_to_points:
-            classified = classify_entities([entity], block_transform_matrices, block_entity_to_points, metadata, layer_properties,
-                                           header_defaults)
-            for key in border_contours.keys():
-                border_contours[key].extend(classified.get(key, []))
+        all_entities.extend(block_entity_to_points.keys())
+        all_entity_to_points.update(block_entity_to_points)
+        all_transform_matrices.update(block_transform_matrices)
+
+    classified = classify_contour_entities(all_entities, all_transform_matrices, all_entity_to_points, metadata, layer_properties, header_defaults)
+    for key in border_contours.keys():
+        border_contours[key].extend(classified.get(key, []))
+
     border_view = {"contours": border_contours, "block_name": "Border"}
 
     return border_view

@@ -5,9 +5,9 @@ import logging
 import cProfile
 import pstats
 import time
-from app.parsers.parsing import process_entities, classify_entities, classify_text_entities, process_border_block
+from app.parsers.parsing import process_entities, classify_contour_entities, classify_text_entities, process_border_block
 from app.parsers.parsing_utilities import get_doc_data
-from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_initial_clusters, find_closest_view
+from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_first_clusters, find_closest_view
 from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
 from app.parsers.text_analysis.text_analysis import analyze_texts
@@ -20,6 +20,7 @@ def get_text_styles(doc):
     for style in doc.styles:
         text_styles[style.dxf.name] = style.dxf.font
     return text_styles
+
 
 def assign_views_to_texts(texts, alpha_shapes):
     for text_type in ['texts', 'mtexts', 'attdefs']:
@@ -38,21 +39,17 @@ def read_dxf(file_path):
 
     text_styles = get_text_styles(doc)
 
-    points, entity_to_points, transform_matrices, border_inserts, dimensions, texts = process_entities(doc.blocks, all_entities, text_styles)
+    points, entity_to_points, transform_matrices, border_inserts, dimension_entities, texts = process_entities(doc.blocks, all_entities, text_styles)
 
-    for dimension in dimensions:
-        pass
-
-    flat_points, labels = form_initial_clusters(entity_to_points)
+    flat_points, labels = form_first_clusters(entity_to_points)
 
     # Exclude border entities from clustering
-    clusters = assign_entities_to_clusters(
-        {k: v for k, v in entity_to_points.items() if k not in [be[0] for be in border_inserts]}, flat_points, labels)
+    clusters = assign_entities_to_clusters({k: v for k, v in entity_to_points.items()}, flat_points, labels)
 
     # Convert clusters dictionary to list of lists
     cluster_list = list(clusters.values())
-    print("cluster_list: ")
-    print(cluster_list)
+    # print("cluster_list: ")
+    # print(cluster_list)
 
     # Process border entities
     border_view = None
@@ -61,7 +58,6 @@ def read_dxf(file_path):
         pass
 
     final_clusters, alpha_shapes = iterative_merge(cluster_list, 0)
-
 
     text_entities = classify_text_entities(all_entities, text_styles, metadata, layer_properties, header_defaults)
 
@@ -74,22 +70,51 @@ def read_dxf(file_path):
     texts_with_views = assign_views_to_texts(texts, alpha_shapes)
 
     # Debug: Print texts_with_views to check its structure
-    print("texts_with_views:", texts_with_views)
+    # print("texts_with_views:", texts_with_views)
 
+    dimension_geometries = {}
+    for de in dimension_entities:
+        d_block_pointer = de.dxf.get('geometry', None)
+        if d_block_pointer:
+            d_block = doc.blocks[d_block_pointer]
+            dimension_geometry = {}
+            d_geometry_contours = {
+                "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
+                "splines": []
+            }
+            all_d_block_entities = []
+            all_d_block_entities_to_points = {}
+            all_d_block_entity_transform_matrices = {}
+
+            _, d_block_entities_to_points, d_block_transform_matrices, *_ = process_entities(doc_blocks, list(d_block), None)  # matrix missing
+            all_d_block_entities.extend(d_block_entities_to_points.keys())
+            all_d_block_entities_to_points.update(d_block_entities_to_points)
+            all_d_block_entity_transform_matrices.update(d_block_transform_matrices)
+
+            classified = classify_contour_entities(all_d_block_entities, all_d_block_entity_transform_matrices,
+                                                   all_d_block_entities_to_points, metadata, layer_properties,
+                                                   header_defaults)
+            for key in d_geometry_contours.keys():
+                d_geometry_contours[key].extend(classified.get(key, []))
+            dimension_geometry["contours"] = d_geometry_contours
+            dimension_geometry["view"] = find_closest_view(de.dxf.get('defpoint', None), alpha_shapes)
+            dimension_geometries[d_block_pointer] = dimension_geometry
     views = [
         {
-            "contours": classify_entities(cluster, transform_matrices, entity_to_points,metadata, layer_properties, header_defaults),
-            "block_name": f"View {idx + 1}",
+            "block_name": f"View {idx}",
+            "contours": classify_contour_entities(cluster, transform_matrices, entity_to_points, metadata, layer_properties, header_defaults),
             "texts": [
-                text for text_type in texts_with_views for text in texts_with_views[text_type] if text.get("view") == idx
-            ]
+                text for text_type in texts_with_views for text in texts_with_views[text_type]
+                if text.get("view") == idx
+            ],
+            "dimensions": [dimension_geometry for dimension_geometry in dimension_geometries.values()
+                           if dimension_geometry.get("view") == idx]
         }
         for idx, cluster in enumerate(final_clusters)]
 
     if border_view:
-       views.append(border_view)
-
-    return views, dimensions, metadata, texts
+        views.append(border_view)
+    return views, dimension_entities, metadata, texts
 
 
 def initialize(file_path, matplotlib=False, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=True):
@@ -109,8 +134,7 @@ def initialize(file_path, matplotlib=False, save=False, analyze_dimensions=True,
         all_texts = analyze_texts(all_texts)
         analyze_texts_time = time.time() - analyze_texts_time
 
-
-    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": [], "texts": all_texts}
+    page = {"metadata": metadata, "bounding_box": {}, "views": views, "info_boxes": []}
 
     if matplotlib:
         visualize_time = time.time()
@@ -153,12 +177,9 @@ def save_json(page):
         json.dump(page, json_file, indent=4)
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DXF_FILE_PATH = os.path.abspath(os.path.join(BASE_DIR, '..', '..', '..', 'data', 'LauriKastJaRocket', 'LauriKastJaRocket_Sheet_1.dxf'))
-
 if __name__ == "__main__":
     file_path = os.path.join(os.getcwd(), "../../test_data",
-                             "12-02-0 Tiisel CNC SynDat 3/12-02-0 Tiisel CNC SynDat 3_Sheet_4.dxf")
+                             "Lauritoru.dxf")
 
     profile = False
 
@@ -180,4 +201,4 @@ if __name__ == "__main__":
         # ps = pstats.Stats(pr)
         # ps.strip_dirs().sort_stats(pstats.SortKey.TIME).print_stats()
     else:
-        initialize(file_path, matplotlib=True, save=False, analyze_dimensions=True, log_times=True, do_analyze_texts=False)
+        initialize(file_path, matplotlib=True, save=True, analyze_dimensions=True, log_times=True, do_analyze_texts=False)

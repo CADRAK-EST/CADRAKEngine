@@ -21,7 +21,7 @@ def assign_entities_to_clusters(entity_to_points, points, labels):
     return clusters
 
 
-def form_initial_clusters(entity_to_points):
+def form_first_clusters(entity_to_points):
     # Step 1: Flatten the dictionary to a list of points and a list of initial labels
     flat_points = []
     initial_labels = []
