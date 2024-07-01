@@ -45,9 +45,8 @@ def parse_file(file):
                         page_number += 1
                 
         yield json.dumps(report_card).encode('utf-8')
-    
-    os.remove(file_path)
-    if file.filename.endswith('.zip'):
-        shutil.rmtree(temp_dir)
+        os.remove(file_path)
+        if temp_dir:
+            shutil.rmtree(temp_dir)
 
     return generate
