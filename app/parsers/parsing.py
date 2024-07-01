@@ -2,6 +2,9 @@
 import numpy as np
 import re
 from collections import defaultdict
+
+from shapely import Point
+
 from app.parsers.utilities import (format_point2, transform_point_to_tuple, transform_point_to_list, normalize_vector,
                                    compute_rotation_matrix, transform_height)
 from app.parsers.parsing_utilities import (get_entity_color, get_entity_lineweight, get_entity_linetype,
@@ -381,3 +384,52 @@ def process_border_block(border_inserts, doc_blocks, metadata, layer_properties,
     border_view = {"contours": border_contours, "block_name": "Border"}
 
     return border_view
+
+
+def process_dimension_geometries(dimension_entities, doc_blocks, metadata, layer_properties, header_defaults, alpha_shapes, text_styles):
+    dimension_geometries = {}
+
+    for de in dimension_entities:
+        d_block_pointer = de.dxf.get('geometry', None)
+        if d_block_pointer:
+            d_block = doc_blocks[d_block_pointer]
+            dimension_geometry = {}
+            d_geometry_contours = {
+                "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
+                "splines": []
+            }
+            all_d_block_entities = []
+            all_d_block_entities_to_points = {}
+            all_d_block_entity_transform_matrices = {}
+
+            _, d_block_entities_to_points, d_block_transform_matrices, *_ = process_entities(doc_blocks, list(d_block), None)  # matrix missing
+            all_d_block_entities.extend(d_block_entities_to_points.keys())
+            all_d_block_entities_to_points.update(d_block_entities_to_points)
+            all_d_block_entity_transform_matrices.update(d_block_transform_matrices)
+            d_block_texts = classify_text_entities(all_d_block_entities, text_styles, metadata, layer_properties, header_defaults)
+
+            classified = classify_contour_entities(all_d_block_entities, all_d_block_entity_transform_matrices,
+                                                   all_d_block_entities_to_points, metadata, layer_properties,
+                                                   header_defaults)
+            for key in d_geometry_contours.keys():
+                d_geometry_contours[key].extend(classified.get(key, []))
+            dimension_geometry["contours"] = d_geometry_contours
+            dimension_geometry["view"] = find_closest_view(de.dxf.get('defpoint', None), alpha_shapes)
+            dimension_geometry["texts"] = d_block_texts
+            dimension_geometries[d_block_pointer] = dimension_geometry
+
+    return dimension_geometries
+
+
+def find_closest_view(text_center, alpha_shapes):
+    min_distance = float('inf')
+    closest_view = None
+    point = Point(text_center)
+    for view, alpha_shape_coords in alpha_shapes.items():
+        # alpha_shape = Polygon(alpha_shape_coords)
+        # dist = point.distance(alpha_shape)
+        dist = point.distance(alpha_shape_coords)
+        if dist < min_distance:
+            min_distance = dist
+            closest_view = view
+    return closest_view
