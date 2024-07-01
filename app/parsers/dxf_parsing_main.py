@@ -5,9 +5,10 @@ import logging
 import cProfile
 import pstats
 import time
-from app.parsers.parsing import process_entities, classify_contour_entities, classify_text_entities, process_border_block
+from app.parsers.parsing import (process_entities, classify_contour_entities, classify_text_entities,
+                                 process_border_block, process_dimension_geometries, find_closest_view)
 from app.parsers.parsing_utilities import get_doc_data
-from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_first_clusters, find_closest_view
+from app.parsers.clustering import iterative_merge, assign_entities_to_clusters, form_first_clusters
 from app.parsers.visualization_utilities import plot_entities, indicate_mistakes
 from app.parsers.dimension_analysis import find_lengths
 from app.parsers.text_analysis.text_analysis import analyze_texts
@@ -72,33 +73,8 @@ def read_dxf(file_path):
     # Debug: Print texts_with_views to check its structure
     # print("texts_with_views:", texts_with_views)
 
-    dimension_geometries = {}
-    for de in dimension_entities:
-        d_block_pointer = de.dxf.get('geometry', None)
-        if d_block_pointer:
-            d_block = doc.blocks[d_block_pointer]
-            dimension_geometry = {}
-            d_geometry_contours = {
-                "lines": [], "circles": [], "arcs": [], "lwpolylines": [], "polylines": [], "solids": [], "ellipses": [],
-                "splines": []
-            }
-            all_d_block_entities = []
-            all_d_block_entities_to_points = {}
-            all_d_block_entity_transform_matrices = {}
+    dimension_geometries = process_dimension_geometries(dimension_entities, doc_blocks, metadata, layer_properties, header_defaults, alpha_shapes, text_styles)
 
-            _, d_block_entities_to_points, d_block_transform_matrices, *_ = process_entities(doc_blocks, list(d_block), None)  # matrix missing
-            all_d_block_entities.extend(d_block_entities_to_points.keys())
-            all_d_block_entities_to_points.update(d_block_entities_to_points)
-            all_d_block_entity_transform_matrices.update(d_block_transform_matrices)
-
-            classified = classify_contour_entities(all_d_block_entities, all_d_block_entity_transform_matrices,
-                                                   all_d_block_entities_to_points, metadata, layer_properties,
-                                                   header_defaults)
-            for key in d_geometry_contours.keys():
-                d_geometry_contours[key].extend(classified.get(key, []))
-            dimension_geometry["contours"] = d_geometry_contours
-            dimension_geometry["view"] = find_closest_view(de.dxf.get('defpoint', None), alpha_shapes)
-            dimension_geometries[d_block_pointer] = dimension_geometry
     views = [
         {
             "block_name": f"View {idx}",

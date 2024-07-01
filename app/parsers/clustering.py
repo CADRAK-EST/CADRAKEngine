@@ -1,4 +1,4 @@
-﻿from shapely import GeometryCollection, Point, Polygon
+﻿from shapely import GeometryCollection
 from sklearn.cluster import DBSCAN
 from shapely.strtree import STRtree
 import alphashape
@@ -153,17 +153,3 @@ def get_alpha_shape(cluster, alpha):
         return MultiPoint(points).convex_hull
 
     return shape
-
-
-def find_closest_view(text_center, alpha_shapes):
-    min_distance = float('inf')
-    closest_view = None
-    point = Point(text_center)
-    for view, alpha_shape_coords in alpha_shapes.items():
-        # alpha_shape = Polygon(alpha_shape_coords)
-        # dist = point.distance(alpha_shape)
-        dist = point.distance(alpha_shape_coords)
-        if dist < min_distance:
-            min_distance = dist
-            closest_view = view
-    return closest_view
